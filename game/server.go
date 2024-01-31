@@ -40,7 +40,12 @@ func (s *Server) PlayerRegister(ctx context.Context, request *pb.PlayerRegisterR
 	var response pb.PlayerRegisterResponse
 	response.Success = false
 
-	// 判断表是否存在
+	if request.Uid == 0 {
+		fmt.Printf("PlayerRegister: uid %d error\n", request.Uid)
+		return &response, nil
+	}
+
+	// 判断表是否存在 不存在则自动创建
 	if !s.Db.Migrator().HasTable(&PlayerInfo{}) {
 		// 创建表
 		err := s.Db.Migrator().CreateTable(&PlayerInfo{})
@@ -50,8 +55,8 @@ func (s *Server) PlayerRegister(ctx context.Context, request *pb.PlayerRegisterR
 	}
 
 	var info PlayerInfo
-	result := s.Db.First(&info, request.Uid)
-
+	// Uid 相同
+	result := s.Db.First(&info, "uid = ?", request.Uid)
 	// 只有在找不到记录的时候才插入 -> 允许注册
 	if result.Error == gorm.ErrRecordNotFound {
 		// 插入数据库
@@ -64,6 +69,6 @@ func (s *Server) PlayerRegister(ctx context.Context, request *pb.PlayerRegisterR
 		return &response, nil
 	}
 
-	fmt.Printf("Register Error: %v\n", result.Error)
+	fmt.Printf("Already Exist: uid %d\n", request.Uid)
 	return &response, nil
 }

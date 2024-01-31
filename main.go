@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net"
 	"os"
@@ -16,22 +17,23 @@ type Config struct {
 	Dsn string `json:"dsn"`
 }
 
-func main() {
-	fmt.Printf("[Goland Server] init.\n")
+func getConnection() gorm.Dialector {
 	//sql.Open("sqlite3", "./game.db")
 	// 连接数据库
 	// 加载配置文件
 
-	var config Config
+	var config Config       // MySQL配置
+	var conn gorm.Dialector // gorm连接
+	conn = nil
 	file, err := os.Open("config.json")
 
 	if err != nil {
-		panic("failed to open config file")
+		return sqlite.Open("game.db")
 	}
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-			fmt.Printf("[Goland Server] failed to close: %v\n", err)
+			fmt.Printf("[Goland Server] failed to close file: %v\n", err)
 		}
 	}(file)
 
@@ -39,11 +41,17 @@ func main() {
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {
-		panic("failed to parse config file")
+		return sqlite.Open("game.db")
 	}
-	var conn gorm.Dialector
-	//conn = sqlite.Open("game.db")  // sqlite3
+
 	conn = mysql.Open(config.Dsn) // mysql
+
+	return conn
+}
+
+func main() {
+	fmt.Printf("[Goland Server] init.\n")
+	conn := getConnection()
 
 	db, err := gorm.Open(conn, &gorm.Config{})
 	if err != nil {
