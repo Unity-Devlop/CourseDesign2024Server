@@ -20,16 +20,63 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type PlayerInfoRequest struct {
+type ErrorCode int32
+
+const (
+	ErrorCode_OK    ErrorCode = 0
+	ErrorCode_ERROR ErrorCode = 1
+)
+
+// Enum value maps for ErrorCode.
+var (
+	ErrorCode_name = map[int32]string{
+		0: "OK",
+		1: "ERROR",
+	}
+	ErrorCode_value = map[string]int32{
+		"OK":    0,
+		"ERROR": 1,
+	}
+)
+
+func (x ErrorCode) Enum() *ErrorCode {
+	p := new(ErrorCode)
+	*p = x
+	return p
+}
+
+func (x ErrorCode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ErrorCode) Descriptor() protoreflect.EnumDescriptor {
+	return file_data_proto_enumTypes[0].Descriptor()
+}
+
+func (ErrorCode) Type() protoreflect.EnumType {
+	return &file_data_proto_enumTypes[0]
+}
+
+func (x ErrorCode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ErrorCode.Descriptor instead.
+func (ErrorCode) EnumDescriptor() ([]byte, []int) {
+	return file_data_proto_rawDescGZIP(), []int{0}
+}
+
+type Error struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"` //用户id
+	Code ErrorCode `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Msg  string    `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 }
 
-func (x *PlayerInfoRequest) Reset() {
-	*x = PlayerInfoRequest{}
+func (x *Error) Reset() {
+	*x = Error{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_data_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -37,13 +84,13 @@ func (x *PlayerInfoRequest) Reset() {
 	}
 }
 
-func (x *PlayerInfoRequest) String() string {
+func (x *Error) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerInfoRequest) ProtoMessage() {}
+func (*Error) ProtoMessage() {}
 
-func (x *PlayerInfoRequest) ProtoReflect() protoreflect.Message {
+func (x *Error) ProtoReflect() protoreflect.Message {
 	mi := &file_data_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -55,30 +102,35 @@ func (x *PlayerInfoRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerInfoRequest.ProtoReflect.Descriptor instead.
-func (*PlayerInfoRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use Error.ProtoReflect.Descriptor instead.
+func (*Error) Descriptor() ([]byte, []int) {
 	return file_data_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *PlayerInfoRequest) GetUid() uint32 {
+func (x *Error) GetCode() ErrorCode {
 	if x != nil {
-		return x.Uid
+		return x.Code
 	}
-	return 0
+	return ErrorCode_OK
 }
 
-type PlayerInfoResponse struct {
+func (x *Error) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+type UserInfoRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid   uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
-	Exist bool   `protobuf:"varint,2,opt,name=exist,proto3" json:"exist,omitempty"`
-	Name  string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Uid uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"` //用户id
 }
 
-func (x *PlayerInfoResponse) Reset() {
-	*x = PlayerInfoResponse{}
+func (x *UserInfoRequest) Reset() {
+	*x = UserInfoRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_data_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -86,13 +138,13 @@ func (x *PlayerInfoResponse) Reset() {
 	}
 }
 
-func (x *PlayerInfoResponse) String() string {
+func (x *UserInfoRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerInfoResponse) ProtoMessage() {}
+func (*UserInfoRequest) ProtoMessage() {}
 
-func (x *PlayerInfoResponse) ProtoReflect() protoreflect.Message {
+func (x *UserInfoRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_data_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -104,44 +156,31 @@ func (x *PlayerInfoResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerInfoResponse.ProtoReflect.Descriptor instead.
-func (*PlayerInfoResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use UserInfoRequest.ProtoReflect.Descriptor instead.
+func (*UserInfoRequest) Descriptor() ([]byte, []int) {
 	return file_data_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *PlayerInfoResponse) GetUid() uint32 {
+func (x *UserInfoRequest) GetUid() uint32 {
 	if x != nil {
 		return x.Uid
 	}
 	return 0
 }
 
-func (x *PlayerInfoResponse) GetExist() bool {
-	if x != nil {
-		return x.Exist
-	}
-	return false
-}
-
-func (x *PlayerInfoResponse) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-type PlayerLoginRequest struct {
+// todo 拓展
+type UserInfoResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid      uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`          //用户id
-	Name     string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`         //用户名
-	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"` //密码
+	Error *Error `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+	Uid   uint32 `protobuf:"varint,2,opt,name=uid,proto3" json:"uid,omitempty"`  //用户id
+	Name  string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"` //用户名
 }
 
-func (x *PlayerLoginRequest) Reset() {
-	*x = PlayerLoginRequest{}
+func (x *UserInfoResponse) Reset() {
+	*x = UserInfoResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_data_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -149,13 +188,13 @@ func (x *PlayerLoginRequest) Reset() {
 	}
 }
 
-func (x *PlayerLoginRequest) String() string {
+func (x *UserInfoResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerLoginRequest) ProtoMessage() {}
+func (*UserInfoResponse) ProtoMessage() {}
 
-func (x *PlayerLoginRequest) ProtoReflect() protoreflect.Message {
+func (x *UserInfoResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_data_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -167,43 +206,43 @@ func (x *PlayerLoginRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerLoginRequest.ProtoReflect.Descriptor instead.
-func (*PlayerLoginRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UserInfoResponse.ProtoReflect.Descriptor instead.
+func (*UserInfoResponse) Descriptor() ([]byte, []int) {
 	return file_data_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *PlayerLoginRequest) GetUid() uint32 {
+func (x *UserInfoResponse) GetError() *Error {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+func (x *UserInfoResponse) GetUid() uint32 {
 	if x != nil {
 		return x.Uid
 	}
 	return 0
 }
 
-func (x *PlayerLoginRequest) GetName() string {
+func (x *UserInfoResponse) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *PlayerLoginRequest) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
-type PlayerLoginResponse struct {
+type UserLoginRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid     uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`         //用户id
-	Success bool   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"` //是否成功
+	Uid      uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`          //用户id
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"` //密码
 }
 
-func (x *PlayerLoginResponse) Reset() {
-	*x = PlayerLoginResponse{}
+func (x *UserLoginRequest) Reset() {
+	*x = UserLoginRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_data_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -211,13 +250,13 @@ func (x *PlayerLoginResponse) Reset() {
 	}
 }
 
-func (x *PlayerLoginResponse) String() string {
+func (x *UserLoginRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerLoginResponse) ProtoMessage() {}
+func (*UserLoginRequest) ProtoMessage() {}
 
-func (x *PlayerLoginResponse) ProtoReflect() protoreflect.Message {
+func (x *UserLoginRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_data_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -229,37 +268,36 @@ func (x *PlayerLoginResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerLoginResponse.ProtoReflect.Descriptor instead.
-func (*PlayerLoginResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use UserLoginRequest.ProtoReflect.Descriptor instead.
+func (*UserLoginRequest) Descriptor() ([]byte, []int) {
 	return file_data_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *PlayerLoginResponse) GetUid() uint32 {
+func (x *UserLoginRequest) GetUid() uint32 {
 	if x != nil {
 		return x.Uid
 	}
 	return 0
 }
 
-func (x *PlayerLoginResponse) GetSuccess() bool {
+func (x *UserLoginRequest) GetPassword() string {
 	if x != nil {
-		return x.Success
+		return x.Password
 	}
-	return false
+	return ""
 }
 
-type PlayerRegisterRequest struct {
+type UserLoginResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid      uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`          //用户id
-	Name     string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`         //用户名
-	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"` //密码
+	Error *Error `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+	Uid   uint32 `protobuf:"varint,2,opt,name=uid,proto3" json:"uid,omitempty"` //用户id
 }
 
-func (x *PlayerRegisterRequest) Reset() {
-	*x = PlayerRegisterRequest{}
+func (x *UserLoginResponse) Reset() {
+	*x = UserLoginResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_data_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -267,13 +305,13 @@ func (x *PlayerRegisterRequest) Reset() {
 	}
 }
 
-func (x *PlayerRegisterRequest) String() string {
+func (x *UserLoginResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerRegisterRequest) ProtoMessage() {}
+func (*UserLoginResponse) ProtoMessage() {}
 
-func (x *PlayerRegisterRequest) ProtoReflect() protoreflect.Message {
+func (x *UserLoginResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_data_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -285,43 +323,36 @@ func (x *PlayerRegisterRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerRegisterRequest.ProtoReflect.Descriptor instead.
-func (*PlayerRegisterRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UserLoginResponse.ProtoReflect.Descriptor instead.
+func (*UserLoginResponse) Descriptor() ([]byte, []int) {
 	return file_data_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *PlayerRegisterRequest) GetUid() uint32 {
+func (x *UserLoginResponse) GetError() *Error {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+func (x *UserLoginResponse) GetUid() uint32 {
 	if x != nil {
 		return x.Uid
 	}
 	return 0
 }
 
-func (x *PlayerRegisterRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *PlayerRegisterRequest) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
-type PlayerRegisterResponse struct {
+type UserRegisterRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Uid     uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`         //用户id
-	Success bool   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"` //是否成功
+	Uid      uint32 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`          //用户id
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"` //密码
 }
 
-func (x *PlayerRegisterResponse) Reset() {
-	*x = PlayerRegisterResponse{}
+func (x *UserRegisterRequest) Reset() {
+	*x = UserRegisterRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_data_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -329,13 +360,13 @@ func (x *PlayerRegisterResponse) Reset() {
 	}
 }
 
-func (x *PlayerRegisterResponse) String() string {
+func (x *UserRegisterRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PlayerRegisterResponse) ProtoMessage() {}
+func (*UserRegisterRequest) ProtoMessage() {}
 
-func (x *PlayerRegisterResponse) ProtoReflect() protoreflect.Message {
+func (x *UserRegisterRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_data_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -347,73 +378,132 @@ func (x *PlayerRegisterResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PlayerRegisterResponse.ProtoReflect.Descriptor instead.
-func (*PlayerRegisterResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use UserRegisterRequest.ProtoReflect.Descriptor instead.
+func (*UserRegisterRequest) Descriptor() ([]byte, []int) {
 	return file_data_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *PlayerRegisterResponse) GetUid() uint32 {
+func (x *UserRegisterRequest) GetUid() uint32 {
 	if x != nil {
 		return x.Uid
 	}
 	return 0
 }
 
-func (x *PlayerRegisterResponse) GetSuccess() bool {
+func (x *UserRegisterRequest) GetPassword() string {
 	if x != nil {
-		return x.Success
+		return x.Password
 	}
-	return false
+	return ""
+}
+
+type UserRegisterResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error *Error `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+	Uid   uint32 `protobuf:"varint,2,opt,name=uid,proto3" json:"uid,omitempty"` //用户id
+}
+
+func (x *UserRegisterResponse) Reset() {
+	*x = UserRegisterResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_data_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UserRegisterResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserRegisterResponse) ProtoMessage() {}
+
+func (x *UserRegisterResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_data_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserRegisterResponse.ProtoReflect.Descriptor instead.
+func (*UserRegisterResponse) Descriptor() ([]byte, []int) {
+	return file_data_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UserRegisterResponse) GetError() *Error {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+func (x *UserRegisterResponse) GetUid() uint32 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
 }
 
 var File_data_proto protoreflect.FileDescriptor
 
 var file_data_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x64, 0x61, 0x74, 0x61, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x22, 0x25, 0x0a, 0x11, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x49, 0x6e, 0x66,
-	0x6f, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x75, 0x69, 0x64, 0x22, 0x50, 0x0a, 0x12, 0x50, 0x6c,
-	0x61, 0x79, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x75,
-	0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x78, 0x69, 0x73, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x08, 0x52, 0x05, 0x65, 0x78, 0x69, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x56, 0x0a, 0x12,
-	0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52,
-	0x03, 0x75, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73,
-	0x77, 0x6f, 0x72, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73,
-	0x77, 0x6f, 0x72, 0x64, 0x22, 0x41, 0x0a, 0x13, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4c, 0x6f,
-	0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x75,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x75, 0x69, 0x64, 0x12, 0x18, 0x0a,
-	0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07,
-	0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x22, 0x59, 0x0a, 0x15, 0x50, 0x6c, 0x61, 0x79, 0x65,
+	0x6f, 0x74, 0x6f, 0x22, 0x3f, 0x0a, 0x05, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x24, 0x0a, 0x04,
+	0x63, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x10, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x63, 0x6f,
+	0x64, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x6d, 0x73, 0x67, 0x22, 0x23, 0x0a, 0x0f, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x75, 0x69, 0x64, 0x22, 0x5c, 0x0a, 0x10, 0x55, 0x73, 0x65,
+	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x22, 0x0a,
+	0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f,
+	0x72, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03,
+	0x75, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x40, 0x0a, 0x10, 0x55, 0x73, 0x65, 0x72, 0x4c,
+	0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x75,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x75, 0x69, 0x64, 0x12, 0x1a, 0x0a,
+	0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x22, 0x49, 0x0a, 0x11, 0x55, 0x73, 0x65,
+	0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x22,
+	0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x05, 0x65, 0x72, 0x72,
+	0x6f, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52,
+	0x03, 0x75, 0x69, 0x64, 0x22, 0x43, 0x0a, 0x13, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x75,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x75, 0x69, 0x64, 0x12, 0x1a, 0x0a,
+	0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x22, 0x4c, 0x0a, 0x14, 0x55, 0x73, 0x65,
+	0x72, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x22, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x05,
+	0x65, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0d, 0x52, 0x03, 0x75, 0x69, 0x64, 0x2a, 0x1e, 0x0a, 0x09, 0x45, 0x72, 0x72, 0x6f, 0x72,
+	0x43, 0x6f, 0x64, 0x65, 0x12, 0x06, 0x0a, 0x02, 0x4f, 0x4b, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05,
+	0x45, 0x52, 0x52, 0x4f, 0x52, 0x10, 0x01, 0x32, 0xd3, 0x01, 0x0a, 0x0b, 0x47, 0x61, 0x6d, 0x65,
+	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x3b, 0x0a, 0x08, 0x55, 0x73, 0x65, 0x72, 0x49,
+	0x6e, 0x66, 0x6f, 0x12, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x55, 0x73, 0x65, 0x72,
+	0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3e, 0x0a, 0x09, 0x55, 0x73, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69,
+	0x6e, 0x12, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4c, 0x6f,
+	0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x18, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x47, 0x0a, 0x0c, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x65, 0x72, 0x12, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x55, 0x73, 0x65,
 	0x72, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x10, 0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x75,
-	0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f,
-	0x72, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f,
-	0x72, 0x64, 0x22, 0x44, 0x0a, 0x16, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a, 0x03,
-	0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x75, 0x69, 0x64, 0x12, 0x18,
-	0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52,
-	0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x32, 0xe5, 0x01, 0x0a, 0x0b, 0x47, 0x61, 0x6d,
-	0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x41, 0x0a, 0x0a, 0x50, 0x6c, 0x61, 0x79,
-	0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x18, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50,
-	0x6c, 0x61, 0x79, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x49,
-	0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x44, 0x0a, 0x0b, 0x50,
-	0x6c, 0x61, 0x79, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x12, 0x19, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x6c,
-	0x61, 0x79, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x4d, 0x0a, 0x0e, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x52, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x12, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x6c, 0x61, 0x79,
-	0x65, 0x72, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72,
-	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x42, 0x0a, 0x5a, 0x08, 0x2e, 0x2f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x1a, 0x1b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0a, 0x5a,
+	0x08, 0x2e, 0x2f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -428,27 +518,34 @@ func file_data_proto_rawDescGZIP() []byte {
 	return file_data_proto_rawDescData
 }
 
-var file_data_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_data_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_data_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_data_proto_goTypes = []interface{}{
-	(*PlayerInfoRequest)(nil),      // 0: proto.PlayerInfoRequest
-	(*PlayerInfoResponse)(nil),     // 1: proto.PlayerInfoResponse
-	(*PlayerLoginRequest)(nil),     // 2: proto.PlayerLoginRequest
-	(*PlayerLoginResponse)(nil),    // 3: proto.PlayerLoginResponse
-	(*PlayerRegisterRequest)(nil),  // 4: proto.PlayerRegisterRequest
-	(*PlayerRegisterResponse)(nil), // 5: proto.PlayerRegisterResponse
+	(ErrorCode)(0),               // 0: proto.ErrorCode
+	(*Error)(nil),                // 1: proto.Error
+	(*UserInfoRequest)(nil),      // 2: proto.UserInfoRequest
+	(*UserInfoResponse)(nil),     // 3: proto.UserInfoResponse
+	(*UserLoginRequest)(nil),     // 4: proto.UserLoginRequest
+	(*UserLoginResponse)(nil),    // 5: proto.UserLoginResponse
+	(*UserRegisterRequest)(nil),  // 6: proto.UserRegisterRequest
+	(*UserRegisterResponse)(nil), // 7: proto.UserRegisterResponse
 }
 var file_data_proto_depIdxs = []int32{
-	0, // 0: proto.GameService.PlayerInfo:input_type -> proto.PlayerInfoRequest
-	2, // 1: proto.GameService.PlayerLogin:input_type -> proto.PlayerLoginRequest
-	4, // 2: proto.GameService.PlayerRegister:input_type -> proto.PlayerRegisterRequest
-	1, // 3: proto.GameService.PlayerInfo:output_type -> proto.PlayerInfoResponse
-	3, // 4: proto.GameService.PlayerLogin:output_type -> proto.PlayerLoginResponse
-	5, // 5: proto.GameService.PlayerRegister:output_type -> proto.PlayerRegisterResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: proto.Error.code:type_name -> proto.ErrorCode
+	1, // 1: proto.UserInfoResponse.error:type_name -> proto.Error
+	1, // 2: proto.UserLoginResponse.error:type_name -> proto.Error
+	1, // 3: proto.UserRegisterResponse.error:type_name -> proto.Error
+	2, // 4: proto.GameService.UserInfo:input_type -> proto.UserInfoRequest
+	4, // 5: proto.GameService.UserLogin:input_type -> proto.UserLoginRequest
+	6, // 6: proto.GameService.UserRegister:input_type -> proto.UserRegisterRequest
+	3, // 7: proto.GameService.UserInfo:output_type -> proto.UserInfoResponse
+	5, // 8: proto.GameService.UserLogin:output_type -> proto.UserLoginResponse
+	7, // 9: proto.GameService.UserRegister:output_type -> proto.UserRegisterResponse
+	7, // [7:10] is the sub-list for method output_type
+	4, // [4:7] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_data_proto_init() }
@@ -458,7 +555,7 @@ func file_data_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_data_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PlayerInfoRequest); i {
+			switch v := v.(*Error); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -470,7 +567,7 @@ func file_data_proto_init() {
 			}
 		}
 		file_data_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PlayerInfoResponse); i {
+			switch v := v.(*UserInfoRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -482,7 +579,7 @@ func file_data_proto_init() {
 			}
 		}
 		file_data_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PlayerLoginRequest); i {
+			switch v := v.(*UserInfoResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -494,7 +591,7 @@ func file_data_proto_init() {
 			}
 		}
 		file_data_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PlayerLoginResponse); i {
+			switch v := v.(*UserLoginRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -506,7 +603,7 @@ func file_data_proto_init() {
 			}
 		}
 		file_data_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PlayerRegisterRequest); i {
+			switch v := v.(*UserLoginResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -518,7 +615,19 @@ func file_data_proto_init() {
 			}
 		}
 		file_data_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PlayerRegisterResponse); i {
+			switch v := v.(*UserRegisterRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_data_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UserRegisterResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -535,13 +644,14 @@ func file_data_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_data_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   6,
+			NumEnums:      1,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_data_proto_goTypes,
 		DependencyIndexes: file_data_proto_depIdxs,
+		EnumInfos:         file_data_proto_enumTypes,
 		MessageInfos:      file_data_proto_msgTypes,
 	}.Build()
 	File_data_proto = out.File

@@ -19,18 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GameService_PlayerInfo_FullMethodName     = "/proto.GameService/PlayerInfo"
-	GameService_PlayerLogin_FullMethodName    = "/proto.GameService/PlayerLogin"
-	GameService_PlayerRegister_FullMethodName = "/proto.GameService/PlayerRegister"
+	GameService_UserInfo_FullMethodName     = "/proto.GameService/UserInfo"
+	GameService_UserLogin_FullMethodName    = "/proto.GameService/UserLogin"
+	GameService_UserRegister_FullMethodName = "/proto.GameService/UserRegister"
 )
 
 // GameServiceClient is the client API for GameService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GameServiceClient interface {
-	PlayerInfo(ctx context.Context, in *PlayerInfoRequest, opts ...grpc.CallOption) (*PlayerInfoResponse, error)
-	PlayerLogin(ctx context.Context, in *PlayerLoginRequest, opts ...grpc.CallOption) (*PlayerLoginResponse, error)
-	PlayerRegister(ctx context.Context, in *PlayerRegisterRequest, opts ...grpc.CallOption) (*PlayerRegisterResponse, error)
+	UserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error)
+	UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error)
+	UserRegister(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterResponse, error)
 }
 
 type gameServiceClient struct {
@@ -41,27 +41,27 @@ func NewGameServiceClient(cc grpc.ClientConnInterface) GameServiceClient {
 	return &gameServiceClient{cc}
 }
 
-func (c *gameServiceClient) PlayerInfo(ctx context.Context, in *PlayerInfoRequest, opts ...grpc.CallOption) (*PlayerInfoResponse, error) {
-	out := new(PlayerInfoResponse)
-	err := c.cc.Invoke(ctx, GameService_PlayerInfo_FullMethodName, in, out, opts...)
+func (c *gameServiceClient) UserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error) {
+	out := new(UserInfoResponse)
+	err := c.cc.Invoke(ctx, GameService_UserInfo_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *gameServiceClient) PlayerLogin(ctx context.Context, in *PlayerLoginRequest, opts ...grpc.CallOption) (*PlayerLoginResponse, error) {
-	out := new(PlayerLoginResponse)
-	err := c.cc.Invoke(ctx, GameService_PlayerLogin_FullMethodName, in, out, opts...)
+func (c *gameServiceClient) UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error) {
+	out := new(UserLoginResponse)
+	err := c.cc.Invoke(ctx, GameService_UserLogin_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *gameServiceClient) PlayerRegister(ctx context.Context, in *PlayerRegisterRequest, opts ...grpc.CallOption) (*PlayerRegisterResponse, error) {
-	out := new(PlayerRegisterResponse)
-	err := c.cc.Invoke(ctx, GameService_PlayerRegister_FullMethodName, in, out, opts...)
+func (c *gameServiceClient) UserRegister(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterResponse, error) {
+	out := new(UserRegisterResponse)
+	err := c.cc.Invoke(ctx, GameService_UserRegister_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +72,9 @@ func (c *gameServiceClient) PlayerRegister(ctx context.Context, in *PlayerRegist
 // All implementations must embed UnimplementedGameServiceServer
 // for forward compatibility
 type GameServiceServer interface {
-	PlayerInfo(context.Context, *PlayerInfoRequest) (*PlayerInfoResponse, error)
-	PlayerLogin(context.Context, *PlayerLoginRequest) (*PlayerLoginResponse, error)
-	PlayerRegister(context.Context, *PlayerRegisterRequest) (*PlayerRegisterResponse, error)
+	UserInfo(context.Context, *UserInfoRequest) (*UserInfoResponse, error)
+	UserLogin(context.Context, *UserLoginRequest) (*UserLoginResponse, error)
+	UserRegister(context.Context, *UserRegisterRequest) (*UserRegisterResponse, error)
 	mustEmbedUnimplementedGameServiceServer()
 }
 
@@ -82,14 +82,14 @@ type GameServiceServer interface {
 type UnimplementedGameServiceServer struct {
 }
 
-func (UnimplementedGameServiceServer) PlayerInfo(context.Context, *PlayerInfoRequest) (*PlayerInfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PlayerInfo not implemented")
+func (UnimplementedGameServiceServer) UserInfo(context.Context, *UserInfoRequest) (*UserInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserInfo not implemented")
 }
-func (UnimplementedGameServiceServer) PlayerLogin(context.Context, *PlayerLoginRequest) (*PlayerLoginResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PlayerLogin not implemented")
+func (UnimplementedGameServiceServer) UserLogin(context.Context, *UserLoginRequest) (*UserLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserLogin not implemented")
 }
-func (UnimplementedGameServiceServer) PlayerRegister(context.Context, *PlayerRegisterRequest) (*PlayerRegisterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PlayerRegister not implemented")
+func (UnimplementedGameServiceServer) UserRegister(context.Context, *UserRegisterRequest) (*UserRegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserRegister not implemented")
 }
 func (UnimplementedGameServiceServer) mustEmbedUnimplementedGameServiceServer() {}
 
@@ -104,56 +104,56 @@ func RegisterGameServiceServer(s grpc.ServiceRegistrar, srv GameServiceServer) {
 	s.RegisterService(&GameService_ServiceDesc, srv)
 }
 
-func _GameService_PlayerInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PlayerInfoRequest)
+func _GameService_UserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GameServiceServer).PlayerInfo(ctx, in)
+		return srv.(GameServiceServer).UserInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GameService_PlayerInfo_FullMethodName,
+		FullMethod: GameService_UserInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServiceServer).PlayerInfo(ctx, req.(*PlayerInfoRequest))
+		return srv.(GameServiceServer).UserInfo(ctx, req.(*UserInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GameService_PlayerLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PlayerLoginRequest)
+func _GameService_UserLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserLoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GameServiceServer).PlayerLogin(ctx, in)
+		return srv.(GameServiceServer).UserLogin(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GameService_PlayerLogin_FullMethodName,
+		FullMethod: GameService_UserLogin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServiceServer).PlayerLogin(ctx, req.(*PlayerLoginRequest))
+		return srv.(GameServiceServer).UserLogin(ctx, req.(*UserLoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GameService_PlayerRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PlayerRegisterRequest)
+func _GameService_UserRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserRegisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GameServiceServer).PlayerRegister(ctx, in)
+		return srv.(GameServiceServer).UserRegister(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GameService_PlayerRegister_FullMethodName,
+		FullMethod: GameService_UserRegister_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServiceServer).PlayerRegister(ctx, req.(*PlayerRegisterRequest))
+		return srv.(GameServiceServer).UserRegister(ctx, req.(*UserRegisterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -166,16 +166,16 @@ var GameService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*GameServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "PlayerInfo",
-			Handler:    _GameService_PlayerInfo_Handler,
+			MethodName: "UserInfo",
+			Handler:    _GameService_UserInfo_Handler,
 		},
 		{
-			MethodName: "PlayerLogin",
-			Handler:    _GameService_PlayerLogin_Handler,
+			MethodName: "UserLogin",
+			Handler:    _GameService_UserLogin_Handler,
 		},
 		{
-			MethodName: "PlayerRegister",
-			Handler:    _GameService_PlayerRegister_Handler,
+			MethodName: "UserRegister",
+			Handler:    _GameService_UserRegister_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

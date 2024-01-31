@@ -2,11 +2,11 @@ package game
 
 import "gorm.io/gorm"
 
-type PlayerInfo struct {
+type UserInfo struct {
 	gorm.Model
 	Name     string
 	Uid      uint32 `gorm:"primaryKey;unique"` // 42亿足够了
-	position Position
+	Password string
 }
 
 type Position struct {

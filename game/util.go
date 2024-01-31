@@ -7,3 +7,10 @@ func GetStableHash(str string) int {
 	}
 	return hash
 }
+
+func PasswordCheck(str string) bool {
+	if len(str) < 6 || len(str) > 20 {
+		return false
+	}
+	return true
+}

@@ -4,42 +4,51 @@ option go_package = "./;proto";
 
 package proto;
 
-message PlayerInfoRequest{
+enum ErrorCode{
+  OK = 0;
+  ERROR = 1;
+}
+
+message Error{
+  ErrorCode code = 1;
+  string msg = 2;
+}
+
+message UserInfoRequest{
   uint32 uid = 1; //用户id
 }
 
-message PlayerInfoResponse{
-  uint32 uid = 1;
-  bool exist = 2;
-  string name = 3;
+// todo 拓展
+message UserInfoResponse{
+  Error error = 1;
+  uint32 uid = 2; //用户id
+  string name = 3; //用户名
 }
 
-message PlayerLoginRequest{
+message UserLoginRequest{
   uint32 uid = 1; //用户id
-  string name = 2; //用户名
-  string password = 3; //密码
+  string password = 2; //密码
 }
 
-message PlayerLoginResponse{
-  uint32 uid = 1; //用户id
-  bool success = 2; //是否成功
+message UserLoginResponse{
+  Error error = 1;
+  uint32 uid = 2; //用户id
 }
 
-message PlayerRegisterRequest{
+message UserRegisterRequest{
   uint32 uid = 1; //用户id
-  string name = 2; //用户名
-  string password = 3; //密码
+  string password = 2; //密码
 }
 
-message PlayerRegisterResponse{
-  uint32 uid = 1; //用户id
-  bool success = 2; //是否成功
+message UserRegisterResponse{
+  Error error = 1;
+  uint32 uid = 2; //用户id
 }
 
 
 service GameService
 {
-  rpc PlayerInfo(PlayerInfoRequest) returns (PlayerInfoResponse);
-  rpc PlayerLogin(PlayerLoginRequest) returns (PlayerLoginResponse);
-  rpc PlayerRegister(PlayerRegisterRequest) returns (PlayerRegisterResponse);
+  rpc UserInfo(UserInfoRequest) returns (UserInfoResponse);
+  rpc UserLogin(UserLoginRequest) returns (UserLoginResponse);
+  rpc UserRegister(UserRegisterRequest) returns (UserRegisterResponse);
 }

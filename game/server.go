@@ -2,8 +2,9 @@ package game
 
 import (
 	pb "Server/proto"
+	"context"
 	"fmt"
-	"golang.org/x/net/context"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -12,65 +13,74 @@ type Server struct {
 	Db                                *gorm.DB // 游戏的数据库
 }
 
-func (s *Server) PlayerInfo(ctx context.Context, request *pb.PlayerInfoRequest) (*pb.PlayerInfoResponse, error) {
-	//TODO implement me
-	var info PlayerInfo
-	// 查询数据库
-	//result := s.Db.First(&info, request.Uid)
-	result := s.Db.First(&info, "uid = ?", request.Uid)
-
-	if result.Error != nil {
-		fmt.Printf("PlayerInfo Query Error: %v\n", result.Error)
-		return &pb.PlayerInfoResponse{Exist: false}, nil
-	}
-	// 返回数据
-	return &pb.PlayerInfoResponse{
-		Exist: true,
-		Uid:   info.Uid,
-		Name:  info.Name,
-	}, nil
-
-}
-
-func (s *Server) PlayerLogin(ctx context.Context, request *pb.PlayerLoginRequest) (*pb.PlayerLoginResponse, error) {
-	//TODO implement me
+func (s *Server) UserInfo(ctx context.Context, in *pb.UserInfoRequest) (*pb.UserInfoResponse, error) {
 	panic("implement me")
 }
 
-func (s *Server) PlayerRegister(ctx context.Context, request *pb.PlayerRegisterRequest) (*pb.PlayerRegisterResponse, error) {
-	//TODO implement me
-	var response pb.PlayerRegisterResponse
-	response.Success = false
+func (s *Server) UserLogin(ctx context.Context, in *pb.UserLoginRequest) (*pb.UserLoginResponse, error) {
+	var response pb.UserLoginResponse
+	response.Error = &pb.Error{
+		Code: pb.ErrorCode_ERROR,
+	}
+	var info UserInfo
+	result := s.Db.First(&info, "uid = ?", in.Uid)
+	if result.Error != nil {
+		return &response, nil
+	}
+	err := bcrypt.CompareHashAndPassword([]byte(info.Password), []byte(in.Password))
+	if err != nil {
 
-	if request.Uid == 0 {
-		fmt.Printf("PlayerRegister: uid %d error\n", request.Uid)
+		response.Error.Msg = fmt.Sprintf("UserLogin: uid %d password error", in.Uid)
 		return &response, nil
 	}
 
+	response.Error.Code = pb.ErrorCode_OK
+	response.Uid = info.Uid
+	return &response, nil
+}
+
+func (s *Server) UserRegister(ctx context.Context, in *pb.UserRegisterRequest) (*pb.UserRegisterResponse, error) {
+	var response pb.UserRegisterResponse
+	var errorMsg pb.Error
+	errorMsg.Code = pb.ErrorCode_ERROR
+	response.Error = &errorMsg
+
 	// 判断表是否存在 不存在则自动创建
-	if !s.Db.Migrator().HasTable(&PlayerInfo{}) {
+	if !s.Db.Migrator().HasTable(&UserInfo{}) {
 		// 创建表
-		err := s.Db.Migrator().CreateTable(&PlayerInfo{})
+		err := s.Db.Migrator().CreateTable(&UserInfo{})
+		fmt.Printf("UserRegister: create table UserInfo\n")
 		if err != nil {
 			return &response, err
 		}
 	}
 
-	var info PlayerInfo
+	var info UserInfo
 	// Uid 相同
-	result := s.Db.First(&info, "uid = ?", request.Uid)
+	result := s.Db.First(&info, "uid = ?", in.Uid)
+
 	// 只有在找不到记录的时候才插入 -> 允许注册
 	if result.Error == gorm.ErrRecordNotFound {
+		if !PasswordCheck(in.Password) {
+			return &response, nil
+		}
+		bytes, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return &response, err
+		}
 		// 插入数据库
-		info = PlayerInfo{Uid: request.Uid, Name: request.Name}
+		info = UserInfo{
+			Uid:      in.Uid,
+			Password: string(bytes),
+		}
 		s.Db.Create(&info)
 
-		fmt.Printf("PlayerRegister: uid %d success\n", request.Uid)
-		response.Success = true
+		fmt.Printf("UserRegister: uid %d success\n", in.Uid)
+		errorMsg.Code = pb.ErrorCode_OK
 		response.Uid = info.Uid
 		return &response, nil
 	}
-
-	fmt.Printf("Already Exist: uid %d\nError:%s", request.Uid, result.Error)
+	// 其他情况都是注册失败
 	return &response, nil
+
 }
