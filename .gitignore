@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+# sqlite3 test database
+bin/game.db
+
+# Jetbrains IDEs
+.idea/

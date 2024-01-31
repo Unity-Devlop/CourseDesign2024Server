@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option go_package = "./;proto";
+
+package proto;
+
+message PlayerInfoRequest{
+  uint32 uid = 1; //用户id
+}
+
+message PlayerInfoResponse{
+  uint32 uid = 1;
+  bool exist = 2;
+  string name = 3;
+}
+
+message PlayerLoginRequest{
+  uint32 uid = 1; //用户id
+  string name = 2; //用户名
+  string password = 3; //密码
+}
+
+message PlayerLoginResponse{
+  uint32 uid = 1; //用户id
+  bool success = 2; //是否成功
+}
+
+message PlayerRegisterRequest{
+  uint32 uid = 1; //用户id
+  string name = 2; //用户名
+  string password = 3; //密码
+}
+
+message PlayerRegisterResponse{
+  uint32 uid = 1; //用户id
+  bool success = 2; //是否成功
+}
+
+
+service GameService
+{
+  rpc PlayerInfo(PlayerInfoRequest) returns (PlayerInfoResponse);
+  rpc PlayerLogin(PlayerLoginRequest) returns (PlayerLoginResponse);
+  rpc PlayerRegister(PlayerRegisterRequest) returns (PlayerRegisterResponse);
+}
