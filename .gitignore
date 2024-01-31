@@ -25,3 +25,4 @@ bin/game.db
 
 # Jetbrains IDEs
 .idea/
+bin/config.json

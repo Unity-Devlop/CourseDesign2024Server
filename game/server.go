@@ -37,20 +37,33 @@ func (s *Server) PlayerLogin(ctx context.Context, request *pb.PlayerLoginRequest
 
 func (s *Server) PlayerRegister(ctx context.Context, request *pb.PlayerRegisterRequest) (*pb.PlayerRegisterResponse, error) {
 	//TODO implement me
+	var response pb.PlayerRegisterResponse
+	response.Success = false
+
+	// 判断表是否存在
+	if !s.Db.Migrator().HasTable(&PlayerInfo{}) {
+		// 创建表
+		err := s.Db.Migrator().CreateTable(&PlayerInfo{})
+		if err != nil {
+			return &response, err
+		}
+	}
+
 	var info PlayerInfo
 	result := s.Db.First(&info, request.Uid)
-	if result.Error != nil {
-		fmt.Printf("PlayerRegister Query Error: %v\n", result.Error)
-		return &pb.PlayerRegisterResponse{Success: false}, nil
+
+	// 只有在找不到记录的时候才插入 -> 允许注册
+	if result.Error == gorm.ErrRecordNotFound {
+		// 插入数据库
+		info = PlayerInfo{Uid: request.Uid, Name: request.Name}
+		s.Db.Create(&info)
+
+		fmt.Printf("PlayerRegister: uid %d success\n", request.Uid)
+		response.Success = true
+		response.Uid = info.Uid
+		return &response, nil
 	}
-	// 插入数据库
-	info = PlayerInfo{Uid: request.Uid, Name: request.Name}
-	s.Db.Create(&info)
 
-	fmt.Printf("PlayerRegister: uid %d success\n", request.Uid)
-
-	return &pb.PlayerRegisterResponse{
-		Success: true,
-		Uid:     request.Uid,
-	}, nil
+	fmt.Printf("Register Error: %v\n", result.Error)
+	return &response, nil
 }
