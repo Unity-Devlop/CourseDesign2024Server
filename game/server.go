@@ -16,7 +16,9 @@ func (s *Server) PlayerInfo(ctx context.Context, request *pb.PlayerInfoRequest) 
 	//TODO implement me
 	var info PlayerInfo
 	// 查询数据库
-	result := s.Db.First(&info, request.Uid)
+	//result := s.Db.First(&info, request.Uid)
+	result := s.Db.First(&info, "uid = ?", request.Uid)
+
 	if result.Error != nil {
 		fmt.Printf("PlayerInfo Query Error: %v\n", result.Error)
 		return &pb.PlayerInfoResponse{Exist: false}, nil
@@ -69,6 +71,6 @@ func (s *Server) PlayerRegister(ctx context.Context, request *pb.PlayerRegisterR
 		return &response, nil
 	}
 
-	fmt.Printf("Already Exist: uid %d\n", request.Uid)
+	fmt.Printf("Already Exist: uid %d\nError:%s", request.Uid, result.Error)
 	return &response, nil
 }

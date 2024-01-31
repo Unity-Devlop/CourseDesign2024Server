@@ -3,14 +3,11 @@ package main
 import (
 	"Server/game"
 	pb "Server/proto"
-	"encoding/json"
 	"fmt"
 	"google.golang.org/grpc"
-	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"net"
-	"os"
 )
 
 type Config struct {
@@ -21,32 +18,33 @@ func getConnection() gorm.Dialector {
 	//sql.Open("sqlite3", "./game.db")
 	// 连接数据库
 	// 加载配置文件
+	return sqlite.Open("game.db")
 
-	var config Config       // MySQL配置
-	var conn gorm.Dialector // gorm连接
-	conn = nil
-	file, err := os.Open("config.json")
-
-	if err != nil {
-		return sqlite.Open("game.db")
-	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			fmt.Printf("[Goland Server] failed to close file: %v\n", err)
-		}
-	}(file)
-
-	// 解析json
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&config)
-	if err != nil {
-		return sqlite.Open("game.db")
-	}
-
-	conn = mysql.Open(config.Dsn) // mysql
-
-	return conn
+	//var config Config       // MySQL配置
+	//var conn gorm.Dialector // gorm连接
+	//conn = nil
+	//file, err := os.Open("config.json")
+	//
+	//if err != nil {
+	//	return sqlite.Open("game.db")
+	//}
+	//defer func(file *os.File) {
+	//	err := file.Close()
+	//	if err != nil {
+	//		fmt.Printf("[Goland Server] failed to close file: %v\n", err)
+	//	}
+	//}(file)
+	//
+	//// 解析json
+	//decoder := json.NewDecoder(file)
+	//err = decoder.Decode(&config)
+	//if err != nil {
+	//	return sqlite.Open("game.db")
+	//}
+	//
+	//conn = mysql.Open(config.Dsn) // mysql
+	//
+	//return conn
 }
 
 func main() {
