@@ -5,12 +5,16 @@ import (
 	"context"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
 type Server struct {
-	pb.UnimplementedGameServiceServer          // Rpc服务
-	Db                                *gorm.DB // 游戏的数据库
+	pb.UnimplementedGameServiceServer                      // Rpc服务
+	Db                                *gorm.DB             // 游戏的数据库
+	publicCharChannel                 chan *pb.ChatMessage // 公共聊天频道
+	bubbleCharChannel                 chan *pb.ChatMessage // 泡泡聊天频道
 }
 
 func (s *Server) CreateCharacter(ctx context.Context, in *pb.CreateCharacterRequest) (*pb.CreateCharacterResponse, error) {
@@ -159,4 +163,17 @@ func (s *Server) UserRegister(ctx context.Context, in *pb.UserRegisterRequest) (
 	}
 	// 其他情况都是注册失败
 	return &response, nil
+}
+
+func (s *Server) PublicChat(ctx context.Context, in *pb.ChatMessage) (*pb.ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PublicChat not implemented")
+}
+func (s *Server) BubbleChat(ctx context.Context, in *pb.ChatMessage) (*pb.ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BubbleChat not implemented")
+}
+func (s *Server) StartPublicChat(in *pb.ChatRequest, stream pb.GameService_StartPublicChatServer) error {
+	return status.Errorf(codes.Unimplemented, "method StartPublicChat not implemented")
+}
+func (s *Server) StartBubbleChat(in *pb.ChatRequest, stream pb.GameService_StartBubbleChatServer) error {
+	return status.Errorf(codes.Unimplemented, "method StartBubbleChat not implemented")
 }

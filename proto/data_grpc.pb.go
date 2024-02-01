@@ -23,16 +23,26 @@ const (
 	GameService_UserLogin_FullMethodName       = "/proto.GameService/UserLogin"
 	GameService_UserRegister_FullMethodName    = "/proto.GameService/UserRegister"
 	GameService_CreateCharacter_FullMethodName = "/proto.GameService/CreateCharacter"
+	GameService_PublicChat_FullMethodName      = "/proto.GameService/PublicChat"
+	GameService_BubbleChat_FullMethodName      = "/proto.GameService/BubbleChat"
+	GameService_StartPublicChat_FullMethodName = "/proto.GameService/StartPublicChat"
+	GameService_StartBubbleChat_FullMethodName = "/proto.GameService/StartBubbleChat"
 )
 
 // GameServiceClient is the client API for GameService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GameServiceClient interface {
+	// 用户相关
 	UserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error)
 	UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error)
 	UserRegister(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterResponse, error)
 	CreateCharacter(ctx context.Context, in *CreateCharacterRequest, opts ...grpc.CallOption) (*CreateCharacterResponse, error)
+	// 聊天相关
+	PublicChat(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*ErrorMessage, error)
+	BubbleChat(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*ErrorMessage, error)
+	StartPublicChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (GameService_StartPublicChatClient, error)
+	StartBubbleChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (GameService_StartBubbleChatClient, error)
 }
 
 type gameServiceClient struct {
@@ -79,14 +89,102 @@ func (c *gameServiceClient) CreateCharacter(ctx context.Context, in *CreateChara
 	return out, nil
 }
 
+func (c *gameServiceClient) PublicChat(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_PublicChat_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) BubbleChat(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_BubbleChat_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) StartPublicChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (GameService_StartPublicChatClient, error) {
+	stream, err := c.cc.NewStream(ctx, &GameService_ServiceDesc.Streams[0], GameService_StartPublicChat_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &gameServiceStartPublicChatClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type GameService_StartPublicChatClient interface {
+	Recv() (*ChatMessage, error)
+	grpc.ClientStream
+}
+
+type gameServiceStartPublicChatClient struct {
+	grpc.ClientStream
+}
+
+func (x *gameServiceStartPublicChatClient) Recv() (*ChatMessage, error) {
+	m := new(ChatMessage)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *gameServiceClient) StartBubbleChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (GameService_StartBubbleChatClient, error) {
+	stream, err := c.cc.NewStream(ctx, &GameService_ServiceDesc.Streams[1], GameService_StartBubbleChat_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &gameServiceStartBubbleChatClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type GameService_StartBubbleChatClient interface {
+	Recv() (*ChatMessage, error)
+	grpc.ClientStream
+}
+
+type gameServiceStartBubbleChatClient struct {
+	grpc.ClientStream
+}
+
+func (x *gameServiceStartBubbleChatClient) Recv() (*ChatMessage, error) {
+	m := new(ChatMessage)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // GameServiceServer is the server API for GameService service.
 // All implementations must embed UnimplementedGameServiceServer
 // for forward compatibility
 type GameServiceServer interface {
+	// 用户相关
 	UserInfo(context.Context, *UserInfoRequest) (*UserInfoResponse, error)
 	UserLogin(context.Context, *UserLoginRequest) (*UserLoginResponse, error)
 	UserRegister(context.Context, *UserRegisterRequest) (*UserRegisterResponse, error)
 	CreateCharacter(context.Context, *CreateCharacterRequest) (*CreateCharacterResponse, error)
+	// 聊天相关
+	PublicChat(context.Context, *ChatMessage) (*ErrorMessage, error)
+	BubbleChat(context.Context, *ChatMessage) (*ErrorMessage, error)
+	StartPublicChat(*ChatRequest, GameService_StartPublicChatServer) error
+	StartBubbleChat(*ChatRequest, GameService_StartBubbleChatServer) error
 	mustEmbedUnimplementedGameServiceServer()
 }
 
@@ -105,6 +203,18 @@ func (UnimplementedGameServiceServer) UserRegister(context.Context, *UserRegiste
 }
 func (UnimplementedGameServiceServer) CreateCharacter(context.Context, *CreateCharacterRequest) (*CreateCharacterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCharacter not implemented")
+}
+func (UnimplementedGameServiceServer) PublicChat(context.Context, *ChatMessage) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PublicChat not implemented")
+}
+func (UnimplementedGameServiceServer) BubbleChat(context.Context, *ChatMessage) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BubbleChat not implemented")
+}
+func (UnimplementedGameServiceServer) StartPublicChat(*ChatRequest, GameService_StartPublicChatServer) error {
+	return status.Errorf(codes.Unimplemented, "method StartPublicChat not implemented")
+}
+func (UnimplementedGameServiceServer) StartBubbleChat(*ChatRequest, GameService_StartBubbleChatServer) error {
+	return status.Errorf(codes.Unimplemented, "method StartBubbleChat not implemented")
 }
 func (UnimplementedGameServiceServer) mustEmbedUnimplementedGameServiceServer() {}
 
@@ -191,6 +301,84 @@ func _GameService_CreateCharacter_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GameService_PublicChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChatMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).PublicChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_PublicChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).PublicChat(ctx, req.(*ChatMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_BubbleChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChatMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).BubbleChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_BubbleChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).BubbleChat(ctx, req.(*ChatMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_StartPublicChat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ChatRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(GameServiceServer).StartPublicChat(m, &gameServiceStartPublicChatServer{stream})
+}
+
+type GameService_StartPublicChatServer interface {
+	Send(*ChatMessage) error
+	grpc.ServerStream
+}
+
+type gameServiceStartPublicChatServer struct {
+	grpc.ServerStream
+}
+
+func (x *gameServiceStartPublicChatServer) Send(m *ChatMessage) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _GameService_StartBubbleChat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ChatRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(GameServiceServer).StartBubbleChat(m, &gameServiceStartBubbleChatServer{stream})
+}
+
+type GameService_StartBubbleChatServer interface {
+	Send(*ChatMessage) error
+	grpc.ServerStream
+}
+
+type gameServiceStartBubbleChatServer struct {
+	grpc.ServerStream
+}
+
+func (x *gameServiceStartBubbleChatServer) Send(m *ChatMessage) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // GameService_ServiceDesc is the grpc.ServiceDesc for GameService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -214,7 +402,26 @@ var GameService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "CreateCharacter",
 			Handler:    _GameService_CreateCharacter_Handler,
 		},
+		{
+			MethodName: "PublicChat",
+			Handler:    _GameService_PublicChat_Handler,
+		},
+		{
+			MethodName: "BubbleChat",
+			Handler:    _GameService_BubbleChat_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StartPublicChat",
+			Handler:       _GameService_StartPublicChat_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "StartBubbleChat",
+			Handler:       _GameService_StartBubbleChat_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "data.proto",
 }

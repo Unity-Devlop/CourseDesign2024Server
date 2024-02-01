@@ -59,11 +59,31 @@ message CreateCharacterResponse{
   uint32 uid = 2; //用户id
 }
 
+message ChatRequest{
+
+}
+
+message ChatMessage{
+  uint32 uid = 1;
+  string  msg = 2;
+}
+
 
 service GameService
 {
+  //用户相关
   rpc UserInfo(UserInfoRequest) returns (UserInfoResponse);
   rpc UserLogin(UserLoginRequest) returns (UserLoginResponse);
   rpc UserRegister(UserRegisterRequest) returns (UserRegisterResponse);
   rpc CreateCharacter(CreateCharacterRequest) returns (CreateCharacterResponse);
+
+  // 聊天相关
+  rpc PublicChat(ChatMessage) returns (ErrorMessage); // 公屏聊天
+  rpc BubbleChat(ChatMessage) returns (ErrorMessage); // 气泡聊天
+  rpc StartPublicChat(ChatRequest) returns (stream ChatMessage); // 公屏聊天
+  rpc StartBubbleChat(ChatRequest) returns (stream ChatMessage); // 气泡聊天
+
+  // TODO 客户端上传
+
+  // TODO 双向通信
 }
