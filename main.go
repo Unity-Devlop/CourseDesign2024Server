@@ -19,7 +19,7 @@ func getConnection() gorm.Dialector {
 	// 连接数据库
 	// 加载配置文件
 	return sqlite.Open("game.db")
-
+	//
 	//var config Config       // MySQL配置
 	//var conn gorm.Dialector // gorm连接
 	//conn = nil

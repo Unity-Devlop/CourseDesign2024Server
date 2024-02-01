@@ -4,13 +4,13 @@ option go_package = "./;proto";
 
 package proto;
 
-enum ErrorCode{
+enum StatusCode{
   OK = 0;
   ERROR = 1;
 }
 
-message Error{
-  ErrorCode code = 1;
+message ErrorMessage{
+  StatusCode code = 1;
   string msg = 2;
 }
 
@@ -20,9 +20,13 @@ message UserInfoRequest{
 
 // todo 拓展
 message UserInfoResponse{
-  Error error = 1;
+  ErrorMessage error = 1;
   uint32 uid = 2; //用户id
-  string name = 3; //用户名
+  bool hasCharacter = 3; //是否创建过角色
+  string characterName = 4; //角色名
+  float characterPosX = 5; //角色位置x
+  float characterPosY = 6; //角色位置y
+  float characterPosZ = 7; //角色位置z
 }
 
 message UserLoginRequest{
@@ -31,7 +35,7 @@ message UserLoginRequest{
 }
 
 message UserLoginResponse{
-  Error error = 1;
+  ErrorMessage error = 1;
   uint32 uid = 2; //用户id
 }
 
@@ -41,7 +45,17 @@ message UserRegisterRequest{
 }
 
 message UserRegisterResponse{
-  Error error = 1;
+  ErrorMessage error = 1;
+  uint32 uid = 2; //用户id
+}
+
+message CreateCharacterRequest{
+  uint32 uid = 1; //用户id
+  string characterName = 2; //角色名
+}
+
+message CreateCharacterResponse{
+  ErrorMessage error = 1;
   uint32 uid = 2; //用户id
 }
 
@@ -51,4 +65,5 @@ service GameService
   rpc UserInfo(UserInfoRequest) returns (UserInfoResponse);
   rpc UserLogin(UserLoginRequest) returns (UserLoginResponse);
   rpc UserRegister(UserRegisterRequest) returns (UserRegisterResponse);
+  rpc CreateCharacter(CreateCharacterRequest) returns (CreateCharacterResponse);
 }
