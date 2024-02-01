@@ -29,11 +29,10 @@ func (s *Server) UserLogin(ctx context.Context, in *pb.UserLoginRequest) (*pb.Us
 	}
 	err := bcrypt.CompareHashAndPassword([]byte(info.Password), []byte(in.Password))
 	if err != nil {
-
 		response.Error.Msg = fmt.Sprintf("UserLogin: uid %d password error", in.Uid)
 		return &response, nil
 	}
-
+	fmt.Printf("UserLogin: uid %d with password %v success\n", in.Uid, in.Password)
 	response.Error.Code = pb.ErrorCode_OK
 	response.Uid = info.Uid
 	return &response, nil
@@ -58,14 +57,16 @@ func (s *Server) UserRegister(ctx context.Context, in *pb.UserRegisterRequest) (
 	var info UserInfo
 	// Uid 相同
 	result := s.Db.First(&info, "uid = ?", in.Uid)
-
 	// 只有在找不到记录的时候才插入 -> 允许注册
 	if result.Error == gorm.ErrRecordNotFound {
-		if !PasswordCheck(in.Password) {
+		var reason string
+		if !PasswordCheck(in.Password, &reason) {
+			response.Error.Msg = reason
 			return &response, nil
 		}
 		bytes, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 		if err != nil {
+			fmt.Printf("bcrypt.GenerateFromPassword(%s) err: %v\n", in.Password, err)
 			return &response, err
 		}
 		// 插入数据库
@@ -79,8 +80,9 @@ func (s *Server) UserRegister(ctx context.Context, in *pb.UserRegisterRequest) (
 		errorMsg.Code = pb.ErrorCode_OK
 		response.Uid = info.Uid
 		return &response, nil
+	} else if result.Error != nil {
+		fmt.Printf("UserRegister: uid %d failed err:%v \n", in.Uid, result.Error)
 	}
 	// 其他情况都是注册失败
 	return &response, nil
-
 }

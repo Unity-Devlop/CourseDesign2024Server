@@ -8,8 +8,13 @@ func GetStableHash(str string) int {
 	return hash
 }
 
-func PasswordCheck(str string) bool {
-	if len(str) < 6 || len(str) > 20 {
+func PasswordCheck(str string, reason *string) bool {
+	if len(str) < 6 {
+		*reason = "Password length must be greater than 6"
+		return false
+	}
+	if len(str) > 20 {
+		*reason = "Password length must be less than 20"
 		return false
 	}
 	return true
