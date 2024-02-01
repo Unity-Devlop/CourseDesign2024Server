@@ -170,6 +170,7 @@ func (s *Server) PublicChat(ctx context.Context, in *pb.ChatMessage) (*pb.ErrorM
 	return nil, status.Errorf(codes.Unimplemented, "method PublicChat not implemented")
 }
 func (s *Server) BubbleChat(ctx context.Context, in *pb.ChatMessage) (*pb.ErrorMessage, error) {
+	//fmt.Printf("BubbleChat: uid %d msg %s\n", in.Uid, in.Msg)
 	return nil, status.Errorf(codes.Unimplemented, "method BubbleChat not implemented")
 }
 func (s *Server) StartPublicChat(in *pb.ChatRequest, stream pb.GameService_StartPublicChatServer) error {
