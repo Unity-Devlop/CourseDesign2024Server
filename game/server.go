@@ -13,8 +13,9 @@ import (
 type Server struct {
 	pb.UnimplementedGameServiceServer                      // Rpc服务
 	Db                                *gorm.DB             // 游戏的数据库
-	publicCharChannel                 chan *pb.ChatMessage // 公共聊天频道
-	bubbleCharChannel                 chan *pb.ChatMessage // 泡泡聊天频道
+	publicChatChannel                 chan *pb.ChatMessage // 公共聊天频道
+	bubbleChatChannel                 chan *pb.ChatMessage // 泡泡聊天频道
+	onLineUser                        map[uint32]bool      // 在线用户
 }
 
 func (s *Server) CreateCharacter(ctx context.Context, in *pb.CreateCharacterRequest) (*pb.CreateCharacterResponse, error) {
@@ -176,4 +177,12 @@ func (s *Server) StartPublicChat(in *pb.ChatRequest, stream pb.GameService_Start
 }
 func (s *Server) StartBubbleChat(in *pb.ChatRequest, stream pb.GameService_StartBubbleChatServer) error {
 	return status.Errorf(codes.Unimplemented, "method StartBubbleChat not implemented")
+}
+
+func (s *Server) Connect(ctx context.Context, in *pb.ConnectUser) (*pb.ErrorMessage, error) {
+	//s.onLineUser[in.Uid] = true
+	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (s *Server) Disconnect(ctx context.Context, in *pb.DisconnectUser) (*pb.ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
 }

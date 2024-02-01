@@ -68,9 +68,21 @@ message ChatMessage{
   string  msg = 2;
 }
 
+message ConnectUser{
+  uint32 uid = 1;
+}
+
+message DisconnectUser{
+  uint32 uid = 1;
+}
+
 
 service GameService
 {
+  // 连接相关
+  rpc Connect(ConnectUser) returns (ErrorMessage);
+  rpc Disconnect(DisconnectUser) returns (ErrorMessage);
+
   //用户相关
   rpc UserInfo(UserInfoRequest) returns (UserInfoResponse);
   rpc UserLogin(UserLoginRequest) returns (UserLoginResponse);
