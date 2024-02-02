@@ -45,7 +45,8 @@ func main() {
 				panic(err)
 			}
 			msg := &pb.ChatMessage{Uid: randomUid, Msg: input}
-			response, err := client.BubbleChat(ctx, msg)
+			//response, err := client.BubbleChat(ctx, msg)
+			response, err := client.PublicChat(ctx, msg)
 			if err != nil {
 				fmt.Printf("failed to call BubbleChat: %v\n", err)
 			}
@@ -64,7 +65,8 @@ func main() {
 		var chatRequest = &pb.ChatRequest{
 			Uid: randomUid,
 		}
-		chatStream, err := client.StartBubbleChat(ctx, chatRequest)
+		//chatStream, err := client.StartBubbleChat(ctx, chatRequest)
+		chatStream, err := client.StartPublicChat(ctx, chatRequest)
 		if err != nil {
 			fmt.Printf("failed to call StartBubbleChat: %v\n", err)
 			return
