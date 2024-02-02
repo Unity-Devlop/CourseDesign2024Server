@@ -5,8 +5,6 @@ import (
 	"context"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +13,19 @@ type Server struct {
 	Db                                *gorm.DB                           // 游戏的数据库
 	publicChat                        *BroadcastService[*pb.ChatMessage] // 公共聊天
 	bubbleChat                        *BroadcastService[*pb.ChatMessage] // 泡泡聊天
+}
+
+func NewServer(db *gorm.DB) *Server {
+	return &Server{
+		Db:         db,
+		publicChat: NewBroadcastService[*pb.ChatMessage](),
+		bubbleChat: NewBroadcastService[*pb.ChatMessage](),
+	}
+}
+
+func (s *Server) Run() {
+	s.publicChat.Run()
+	s.bubbleChat.Run()
 }
 
 func (s *Server) CreateCharacter(ctx context.Context, in *pb.CreateCharacterRequest) (*pb.CreateCharacterResponse, error) {
@@ -166,15 +177,66 @@ func (s *Server) UserRegister(ctx context.Context, in *pb.UserRegisterRequest) (
 }
 
 func (s *Server) PublicChat(ctx context.Context, in *pb.ChatMessage) (*pb.ErrorMessage, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PublicChat not implemented")
+	fmt.Printf("PublicChat: uid %d msg %s\n", in.Uid, in.Msg)
+	// 广播消息
+	s.publicChat.Send(in)
+	fmt.Printf("PublicChat: uid %d msg %s success\n", in.Uid, in.Msg)
+	return &pb.ErrorMessage{
+		Code: pb.StatusCode_OK,
+	}, nil
 }
+
 func (s *Server) BubbleChat(ctx context.Context, in *pb.ChatMessage) (*pb.ErrorMessage, error) {
-	//fmt.Printf("BubbleChat: uid %d msg %s\n", in.Uid, in.Msg)
-	return nil, status.Errorf(codes.Unimplemented, "method BubbleChat not implemented")
+	fmt.Printf("BubbleChat: uid %d msg %s\n", in.Uid, in.Msg)
+	// 广播消息
+	s.bubbleChat.Send(in)
+	fmt.Printf("BubbleChat: uid %d msg %s success\n", in.Uid, in.Msg)
+	return &pb.ErrorMessage{
+		Code: pb.StatusCode_OK,
+	}, nil
 }
+
 func (s *Server) StartPublicChat(in *pb.ChatRequest, stream pb.GameService_StartPublicChatServer) error {
-	return status.Errorf(codes.Unimplemented, "method StartPublicChat not implemented")
+
+	fmt.Printf("Start PublicChat: uid %d\n", in.Uid)
+	// 注册广播
+	var pushChan = s.publicChat.Listen()
+	defer func() {
+		s.publicChat.UnListen(pushChan)
+		fmt.Printf("End PublicChat: uid %d\n", in.Uid)
+	}()
+	return s.startChat("PublicChat", in.Uid, pushChan, stream)
 }
+
 func (s *Server) StartBubbleChat(in *pb.ChatRequest, stream pb.GameService_StartBubbleChatServer) error {
-	return status.Errorf(codes.Unimplemented, "method StartBubbleChat not implemented")
+	fmt.Printf("Start BubbleChat: uid %d\n", in.Uid)
+	// 注册广播
+	var pushChan = s.bubbleChat.Listen()
+	defer func() {
+		s.bubbleChat.UnListen(pushChan)
+		fmt.Printf("End BubbleChat: uid %d\n", in.Uid)
+	}()
+	return s.startChat("BubbleChat", in.Uid, pushChan, stream)
+}
+
+func (s *Server) startChat(name string, uid uint32, c chan *pb.ChatMessage, stream pb.GameService_StartBubbleChatServer) error {
+	for {
+		select {
+		case msg, ok := <-c:
+			if !ok {
+				return nil
+			}
+			if msg.Uid == uid {
+				// 不给自己发消息
+				continue
+			}
+			err := stream.Send(msg)
+			if err != nil {
+				fmt.Printf("%s chat error: uid %d failed err:%v \n", name, uid, err)
+				return nil
+			}
+		default:
+			// 没有消息 休息一下
+		}
+	}
 }

@@ -9,8 +9,8 @@ import (
 func Test_BoardCast(t *testing.T) {
 	bs := NewBroadcastService[int]()
 	chBroadcast := bs.Run()
-	chA := bs.Listener()
-	chB := bs.Listener()
+	chA := bs.Listen()
+	chB := bs.Listen()
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
@@ -28,7 +28,7 @@ func Test_BoardCast(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		chBroadcast <- i
 	}
-	bs.UnListener(chA)
+	bs.UnListen(chA)
 	for i := 3; i < 6; i++ {
 		chBroadcast <- i
 	}

@@ -72,11 +72,9 @@ func main() {
 	s := grpc.NewServer()
 	fmt.Printf("[Goland Server] start.\n")
 
-	pb.RegisterGameServiceServer(s,
-		&game.Server{
-			Db: db,
-		},
-	)
+	server := game.NewServer(db)
+	server.Run()
+	pb.RegisterGameServiceServer(s, server)
 	fmt.Printf("[Goland Server] listening at %v\n", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		fmt.Printf("[Goland Server] failed to serve: %v\n", err)

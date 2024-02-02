@@ -6,9 +6,9 @@ type BroadcastService[T any] struct {
 	// 转发给这些channel
 	listeners []chan T
 	// 添加消费者
-	addList chan (chan T)
+	addChan chan (chan T)
 	// 移除消费者
-	removeList chan (chan T)
+	removeChan chan (chan T)
 }
 
 // public
@@ -16,32 +16,32 @@ type BroadcastService[T any] struct {
 // NewBroadcastService 创建一个广播服务
 func NewBroadcastService[T any]() *BroadcastService[T] {
 	return &BroadcastService[T]{
-		in:         make(chan T),
-		listeners:  make([]chan T, 3),
-		addList:    make(chan (chan T)),
-		removeList: make(chan (chan T)),
+		in:         make(chan T), // 无缓冲通道
+		listeners:  make([]chan T, 0),
+		addChan:    make(chan (chan T)),
+		removeChan: make(chan (chan T)),
 	}
 }
 
-// Listener 这会创建一个新消费者并返回一个监听通道
-func (bs *BroadcastService[T]) Listener() chan T {
+// Listen 这会创建一个新消费者并返回一个监听通道
+func (bs *BroadcastService[T]) Listen() chan T {
 	ch := make(chan T)
-	bs.addList <- ch
+	bs.addChan <- ch
 	return ch
 }
 
-// UnListener 移除一个消费者
-func (bs *BroadcastService[T]) UnListener(ch chan T) {
-	bs.removeList <- ch
+// UnListen 移除一个消费者
+func (bs *BroadcastService[T]) UnListen(ch chan T) {
+	bs.removeChan <- ch
 }
 func (bs *BroadcastService[T]) Run() chan T {
 	go func() {
 		for {
 			// 处理新建消费者或者移除消费者
 			select {
-			case newListener := <-bs.addList:
+			case newListener := <-bs.addChan:
 				bs.addListener(newListener)
-			case removeTarget := <-bs.removeList:
+			case removeTarget := <-bs.removeChan:
 				bs.removeListener(removeTarget)
 			case v, ok := <-bs.in:
 				// 如果广播通道关闭，则关闭掉所有的消费者通道
@@ -55,6 +55,9 @@ func (bs *BroadcastService[T]) Run() chan T {
 					}
 					listener <- v
 				}
+			default:
+				// 如果没有数据，休息一下
+				//fmt.Printf("%v no message\n", bs)
 			}
 		}
 	terminate:
@@ -68,6 +71,10 @@ func (bs *BroadcastService[T]) Run() chan T {
 		}
 	}()
 	return bs.in
+}
+
+func (bs *BroadcastService[T]) Send(v T) {
+	bs.in <- v
 }
 
 // private
