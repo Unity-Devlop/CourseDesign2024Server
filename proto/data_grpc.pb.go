@@ -19,8 +19,6 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GameService_Connect_FullMethodName         = "/proto.GameService/Connect"
-	GameService_Disconnect_FullMethodName      = "/proto.GameService/Disconnect"
 	GameService_UserInfo_FullMethodName        = "/proto.GameService/UserInfo"
 	GameService_UserLogin_FullMethodName       = "/proto.GameService/UserLogin"
 	GameService_UserRegister_FullMethodName    = "/proto.GameService/UserRegister"
@@ -35,9 +33,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GameServiceClient interface {
-	// 连接相关
-	Connect(ctx context.Context, in *ConnectUser, opts ...grpc.CallOption) (*ErrorMessage, error)
-	Disconnect(ctx context.Context, in *DisconnectUser, opts ...grpc.CallOption) (*ErrorMessage, error)
 	// 用户相关
 	UserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error)
 	UserLogin(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error)
@@ -56,24 +51,6 @@ type gameServiceClient struct {
 
 func NewGameServiceClient(cc grpc.ClientConnInterface) GameServiceClient {
 	return &gameServiceClient{cc}
-}
-
-func (c *gameServiceClient) Connect(ctx context.Context, in *ConnectUser, opts ...grpc.CallOption) (*ErrorMessage, error) {
-	out := new(ErrorMessage)
-	err := c.cc.Invoke(ctx, GameService_Connect_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *gameServiceClient) Disconnect(ctx context.Context, in *DisconnectUser, opts ...grpc.CallOption) (*ErrorMessage, error) {
-	out := new(ErrorMessage)
-	err := c.cc.Invoke(ctx, GameService_Disconnect_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *gameServiceClient) UserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*UserInfoResponse, error) {
@@ -198,9 +175,6 @@ func (x *gameServiceStartBubbleChatClient) Recv() (*ChatMessage, error) {
 // All implementations must embed UnimplementedGameServiceServer
 // for forward compatibility
 type GameServiceServer interface {
-	// 连接相关
-	Connect(context.Context, *ConnectUser) (*ErrorMessage, error)
-	Disconnect(context.Context, *DisconnectUser) (*ErrorMessage, error)
 	// 用户相关
 	UserInfo(context.Context, *UserInfoRequest) (*UserInfoResponse, error)
 	UserLogin(context.Context, *UserLoginRequest) (*UserLoginResponse, error)
@@ -218,12 +192,6 @@ type GameServiceServer interface {
 type UnimplementedGameServiceServer struct {
 }
 
-func (UnimplementedGameServiceServer) Connect(context.Context, *ConnectUser) (*ErrorMessage, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
-}
-func (UnimplementedGameServiceServer) Disconnect(context.Context, *DisconnectUser) (*ErrorMessage, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
-}
 func (UnimplementedGameServiceServer) UserInfo(context.Context, *UserInfoRequest) (*UserInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserInfo not implemented")
 }
@@ -259,42 +227,6 @@ type UnsafeGameServiceServer interface {
 
 func RegisterGameServiceServer(s grpc.ServiceRegistrar, srv GameServiceServer) {
 	s.RegisterService(&GameService_ServiceDesc, srv)
-}
-
-func _GameService_Connect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ConnectUser)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GameServiceServer).Connect(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: GameService_Connect_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServiceServer).Connect(ctx, req.(*ConnectUser))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _GameService_Disconnect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DisconnectUser)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GameServiceServer).Disconnect(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: GameService_Disconnect_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServiceServer).Disconnect(ctx, req.(*DisconnectUser))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _GameService_UserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -454,14 +386,6 @@ var GameService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.GameService",
 	HandlerType: (*GameServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Connect",
-			Handler:    _GameService_Connect_Handler,
-		},
-		{
-			MethodName: "Disconnect",
-			Handler:    _GameService_Disconnect_Handler,
-		},
 		{
 			MethodName: "UserInfo",
 			Handler:    _GameService_UserInfo_Handler,

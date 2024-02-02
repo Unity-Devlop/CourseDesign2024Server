@@ -15,12 +15,6 @@ type UserInfo struct {
 	Pos           Vector3 `json:"pos" gorm:"type:text"` // 角色位置
 }
 
-type Vector3 struct {
-	x float32
-	y float32
-	z float32
-}
-
 func (vec *Vector3) Scan(value interface{}) error {
 	b, _ := value.([]byte)
 	return json.Unmarshal(b, &vec)
