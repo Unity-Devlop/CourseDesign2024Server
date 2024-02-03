@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"runtime"
+	"time"
 )
 
 type Server struct {
@@ -13,6 +15,7 @@ type Server struct {
 	Db                                *gorm.DB                           // 游戏的数据库
 	publicChat                        *BroadcastService[*pb.ChatMessage] // 公共聊天
 	bubbleChat                        *BroadcastService[*pb.ChatMessage] // 泡泡聊天
+	tickInterval                      uint32                             // 定时器间隔
 }
 
 func NewServer(db *gorm.DB) *Server {
@@ -23,9 +26,10 @@ func NewServer(db *gorm.DB) *Server {
 	}
 }
 
-func (s *Server) Run() {
-	s.publicChat.Run()
-	s.bubbleChat.Run()
+func (s *Server) Run(tickInterval uint32) {
+	s.tickInterval = tickInterval
+	s.publicChat.Run(tickInterval)
+	s.bubbleChat.Run(tickInterval)
 }
 
 func (s *Server) CreateCharacter(ctx context.Context, in *pb.CreateCharacterRequest) (*pb.CreateCharacterResponse, error) {
@@ -220,14 +224,19 @@ func (s *Server) StartBubbleChat(in *pb.ChatRequest, stream pb.GameService_Start
 }
 
 func (s *Server) startChat(name string, uid uint32, c chan *pb.ChatMessage, stream pb.GameService_StartBubbleChatServer) error {
+	defer func() {
+		fmt.Printf("%s chat end: uid %d\n", name, uid)
+	}()
 	for {
 		select {
 		case msg, ok := <-c:
 			if !ok {
+				fmt.Printf("%s chat closed: uid %d\n", name, uid)
 				return nil
 			}
 			if msg.Uid == uid {
 				// 不给自己发消息
+				runtime.Gosched()
 				continue
 			}
 			err := stream.Send(msg)
@@ -237,6 +246,7 @@ func (s *Server) startChat(name string, uid uint32, c chan *pb.ChatMessage, stre
 			}
 		default:
 			// 没有消息 休息一下
+			time.Sleep(time.Duration(s.tickInterval) * time.Millisecond)
 		}
 	}
 }

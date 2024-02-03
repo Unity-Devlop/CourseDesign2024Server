@@ -73,7 +73,7 @@ func main() {
 	fmt.Printf("[Goland Server] start.\n")
 
 	server := game.NewServer(db)
-	server.Run()
+	server.Run(300)
 	pb.RegisterGameServiceServer(s, server)
 	fmt.Printf("[Goland Server] listening at %v\n", lis.Addr())
 	if err := s.Serve(lis); err != nil {

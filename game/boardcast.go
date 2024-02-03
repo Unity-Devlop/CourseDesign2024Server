@@ -1,5 +1,9 @@
 package game
 
+import (
+	"time"
+)
+
 type BroadcastService[T any] struct {
 	// 输入通道
 	in chan T
@@ -34,7 +38,8 @@ func (bs *BroadcastService[T]) Listen() chan T {
 func (bs *BroadcastService[T]) UnListen(ch chan T) {
 	bs.removeChan <- ch
 }
-func (bs *BroadcastService[T]) Run() chan T {
+
+func (bs *BroadcastService[T]) Run(tickInterval uint32) chan T {
 	go func() {
 		for {
 			// 处理新建消费者或者移除消费者
@@ -58,6 +63,8 @@ func (bs *BroadcastService[T]) Run() chan T {
 			default:
 				// 如果没有数据，休息一下
 				//fmt.Printf("%v no message\n", bs)
+				time.Sleep(time.Duration(tickInterval) * time.Millisecond)
+				//runtime.Gosched()
 			}
 		}
 	terminate:
