@@ -15,14 +15,18 @@ type Server struct {
 	Db                                *gorm.DB                           // 游戏的数据库
 	publicChat                        *BroadcastService[*pb.ChatMessage] // 公共聊天
 	bubbleChat                        *BroadcastService[*pb.ChatMessage] // 泡泡聊天
+	uid2publicChat                    map[uint32]*chan *pb.ChatMessage   // uid -> 公共聊天
+	uid2bubbleChat                    map[uint32]*chan *pb.ChatMessage   // uid -> 泡泡聊天
 	tickInterval                      uint32                             // 定时器间隔
 }
 
 func NewServer(db *gorm.DB) *Server {
 	return &Server{
-		Db:         db,
-		publicChat: NewBroadcastService[*pb.ChatMessage](),
-		bubbleChat: NewBroadcastService[*pb.ChatMessage](),
+		Db:             db,
+		publicChat:     NewBroadcastService[*pb.ChatMessage](),
+		bubbleChat:     NewBroadcastService[*pb.ChatMessage](),
+		uid2publicChat: make(map[uint32]*chan *pb.ChatMessage),
+		uid2bubbleChat: make(map[uint32]*chan *pb.ChatMessage),
 	}
 }
 
@@ -201,10 +205,16 @@ func (s *Server) BubbleChat(ctx context.Context, in *pb.ChatMessage) (*pb.ErrorM
 }
 
 func (s *Server) StartPublicChat(in *pb.ChatRequest, stream pb.GameService_StartPublicChatServer) error {
-
+	if s.uid2publicChat[in.Uid] != nil {
+		fmt.Printf("Start PublicChat: uid %d already in chat\n", in.Uid)
+		fmt.Printf("End PublicChat: uid %d\n", in.Uid)
+		s.publicChat.UnListen(*s.uid2publicChat[in.Uid])
+	}
 	fmt.Printf("Start PublicChat: uid %d\n", in.Uid)
 	// 注册广播
 	var pushChan = s.publicChat.Listen()
+	// 记录这个通道
+	s.uid2publicChat[in.Uid] = &pushChan
 	defer func() {
 		s.publicChat.UnListen(pushChan)
 		fmt.Printf("End PublicChat: uid %d\n", in.Uid)
@@ -213,9 +223,18 @@ func (s *Server) StartPublicChat(in *pb.ChatRequest, stream pb.GameService_Start
 }
 
 func (s *Server) StartBubbleChat(in *pb.ChatRequest, stream pb.GameService_StartBubbleChatServer) error {
+	//
+	if s.uid2bubbleChat[in.Uid] != nil {
+		fmt.Printf("Start BubbleChat: uid %d already in chat\n", in.Uid)
+		fmt.Printf("End BubbleChat: uid %d\n", in.Uid)
+		s.bubbleChat.UnListen(*s.uid2bubbleChat[in.Uid])
+	}
 	fmt.Printf("Start BubbleChat: uid %d\n", in.Uid)
 	// 注册广播
 	var pushChan = s.bubbleChat.Listen()
+	// 记录这个通道
+	s.uid2bubbleChat[in.Uid] = &pushChan
+
 	defer func() {
 		s.bubbleChat.UnListen(pushChan)
 		fmt.Printf("End BubbleChat: uid %d\n", in.Uid)

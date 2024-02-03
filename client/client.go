@@ -7,7 +7,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
-	"math/rand"
 )
 
 func createClient() (*grpc.ClientConn, pb.GameServiceClient) {
@@ -28,8 +27,12 @@ func main() {
 			panic(err)
 		}
 	}(conn)
+	var uid uint32
+	_, err := fmt.Scanln(&uid)
+	if err != nil {
+		panic(err)
+	}
 
-	var randomUid = rand.Uint32()
 	ctx := context.Background()
 	// 一直测试 直到退出
 	endChan := make(chan int)
@@ -44,7 +47,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			msg := &pb.ChatMessage{Uid: randomUid, Msg: input}
+			msg := &pb.ChatMessage{Uid: uid, Msg: input}
 			//response, err := client.BubbleChat(ctx, msg)
 			response, err := client.PublicChat(ctx, msg)
 			if err != nil {
@@ -63,7 +66,7 @@ func main() {
 			endChan <- 1
 		}()
 		var chatRequest = &pb.ChatRequest{
-			Uid: randomUid,
+			Uid: uid,
 		}
 		//chatStream, err := client.StartBubbleChat(ctx, chatRequest)
 		chatStream, err := client.StartPublicChat(ctx, chatRequest)
