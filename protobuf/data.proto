@@ -24,9 +24,6 @@ message UserInfoResponse{
   uint32 uid = 2; //用户id
   bool hasCharacter = 3; //是否创建过角色
   string characterName = 4; //角色名
-  float characterPosX = 5; //角色位置x
-  float characterPosY = 6; //角色位置y
-  float characterPosZ = 7; //角色位置z
 }
 
 message UserLoginRequest{
@@ -76,6 +73,35 @@ message DisconnectUser{
   uint32 uid = 1;
 }
 
+message SearchFriendRequest{
+  uint32 searcherUid = 1;// 搜索人的uid
+  uint32 targetUid = 2;// 被搜索人的uid
+}
+
+message SearchFriendResponse{
+  ErrorMessage error = 1;
+  uint32 searcherUid = 2;// 搜索人的uid
+  uint32 targetUid = 3;// 被搜索人的uid
+  string name = 4;// 被搜索人的名字
+  bool  isFriend = 5;// 是否是好友
+}
+
+message AddFriendRequest{
+  uint32 uid = 1;
+  uint32 friendUid = 2;
+}
+
+message FriendListRequest{
+  uint32 uid = 1;
+}
+
+message FriendListResponse{
+  ErrorMessage error = 1;
+  uint32 uid = 2;
+  repeated uint32 friendUid = 3;
+  repeated string friendName = 4;
+}
+
 
 service GameService
 {
@@ -92,6 +118,11 @@ service GameService
   rpc StartBubbleChat(ChatRequest) returns (stream ChatMessage); // 气泡聊天
   rpc StopPublicChat(ChatRequest) returns (ErrorMessage); // 公屏聊天
   rpc StopBubbleChat(ChatRequest) returns (ErrorMessage); // 气泡聊天
+
+  // 好友相关
+  rpc SearchFriend(SearchFriendRequest) returns (SearchFriendResponse);// 搜索好友
+  rpc AddFriend(AddFriendRequest) returns (ErrorMessage);// 添加好友
+  rpc FriendList(FriendListRequest) returns (FriendListResponse);// 好友列表
 
   // TODO 客户端上传
 

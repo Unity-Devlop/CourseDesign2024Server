@@ -27,6 +27,11 @@ const (
 	GameService_BubbleChat_FullMethodName      = "/proto.GameService/BubbleChat"
 	GameService_StartPublicChat_FullMethodName = "/proto.GameService/StartPublicChat"
 	GameService_StartBubbleChat_FullMethodName = "/proto.GameService/StartBubbleChat"
+	GameService_StopPublicChat_FullMethodName  = "/proto.GameService/StopPublicChat"
+	GameService_StopBubbleChat_FullMethodName  = "/proto.GameService/StopBubbleChat"
+	GameService_SearchFriend_FullMethodName    = "/proto.GameService/SearchFriend"
+	GameService_AddFriend_FullMethodName       = "/proto.GameService/AddFriend"
+	GameService_FriendList_FullMethodName      = "/proto.GameService/FriendList"
 )
 
 // GameServiceClient is the client API for GameService service.
@@ -43,6 +48,12 @@ type GameServiceClient interface {
 	BubbleChat(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*ErrorMessage, error)
 	StartPublicChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (GameService_StartPublicChatClient, error)
 	StartBubbleChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (GameService_StartBubbleChatClient, error)
+	StopPublicChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	StopBubbleChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	// 好友相关
+	SearchFriend(ctx context.Context, in *SearchFriendRequest, opts ...grpc.CallOption) (*SearchFriendResponse, error)
+	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	FriendList(ctx context.Context, in *FriendListRequest, opts ...grpc.CallOption) (*FriendListResponse, error)
 }
 
 type gameServiceClient struct {
@@ -171,6 +182,51 @@ func (x *gameServiceStartBubbleChatClient) Recv() (*ChatMessage, error) {
 	return m, nil
 }
 
+func (c *gameServiceClient) StopPublicChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_StopPublicChat_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) StopBubbleChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_StopBubbleChat_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) SearchFriend(ctx context.Context, in *SearchFriendRequest, opts ...grpc.CallOption) (*SearchFriendResponse, error) {
+	out := new(SearchFriendResponse)
+	err := c.cc.Invoke(ctx, GameService_SearchFriend_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_AddFriend_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) FriendList(ctx context.Context, in *FriendListRequest, opts ...grpc.CallOption) (*FriendListResponse, error) {
+	out := new(FriendListResponse)
+	err := c.cc.Invoke(ctx, GameService_FriendList_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GameServiceServer is the server API for GameService service.
 // All implementations must embed UnimplementedGameServiceServer
 // for forward compatibility
@@ -185,6 +241,12 @@ type GameServiceServer interface {
 	BubbleChat(context.Context, *ChatMessage) (*ErrorMessage, error)
 	StartPublicChat(*ChatRequest, GameService_StartPublicChatServer) error
 	StartBubbleChat(*ChatRequest, GameService_StartBubbleChatServer) error
+	StopPublicChat(context.Context, *ChatRequest) (*ErrorMessage, error)
+	StopBubbleChat(context.Context, *ChatRequest) (*ErrorMessage, error)
+	// 好友相关
+	SearchFriend(context.Context, *SearchFriendRequest) (*SearchFriendResponse, error)
+	AddFriend(context.Context, *AddFriendRequest) (*ErrorMessage, error)
+	FriendList(context.Context, *FriendListRequest) (*FriendListResponse, error)
 	mustEmbedUnimplementedGameServiceServer()
 }
 
@@ -215,6 +277,21 @@ func (UnimplementedGameServiceServer) StartPublicChat(*ChatRequest, GameService_
 }
 func (UnimplementedGameServiceServer) StartBubbleChat(*ChatRequest, GameService_StartBubbleChatServer) error {
 	return status.Errorf(codes.Unimplemented, "method StartBubbleChat not implemented")
+}
+func (UnimplementedGameServiceServer) StopPublicChat(context.Context, *ChatRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopPublicChat not implemented")
+}
+func (UnimplementedGameServiceServer) StopBubbleChat(context.Context, *ChatRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopBubbleChat not implemented")
+}
+func (UnimplementedGameServiceServer) SearchFriend(context.Context, *SearchFriendRequest) (*SearchFriendResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchFriend not implemented")
+}
+func (UnimplementedGameServiceServer) AddFriend(context.Context, *AddFriendRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddFriend not implemented")
+}
+func (UnimplementedGameServiceServer) FriendList(context.Context, *FriendListRequest) (*FriendListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FriendList not implemented")
 }
 func (UnimplementedGameServiceServer) mustEmbedUnimplementedGameServiceServer() {}
 
@@ -379,6 +456,96 @@ func (x *gameServiceStartBubbleChatServer) Send(m *ChatMessage) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _GameService_StopPublicChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).StopPublicChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_StopPublicChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).StopPublicChat(ctx, req.(*ChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_StopBubbleChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).StopBubbleChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_StopBubbleChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).StopBubbleChat(ctx, req.(*ChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_SearchFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchFriendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).SearchFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_SearchFriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).SearchFriend(ctx, req.(*SearchFriendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_AddFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddFriendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).AddFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_AddFriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).AddFriend(ctx, req.(*AddFriendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_FriendList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FriendListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).FriendList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_FriendList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).FriendList(ctx, req.(*FriendListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GameService_ServiceDesc is the grpc.ServiceDesc for GameService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -409,6 +576,26 @@ var GameService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BubbleChat",
 			Handler:    _GameService_BubbleChat_Handler,
+		},
+		{
+			MethodName: "StopPublicChat",
+			Handler:    _GameService_StopPublicChat_Handler,
+		},
+		{
+			MethodName: "StopBubbleChat",
+			Handler:    _GameService_StopBubbleChat_Handler,
+		},
+		{
+			MethodName: "SearchFriend",
+			Handler:    _GameService_SearchFriend_Handler,
+		},
+		{
+			MethodName: "AddFriend",
+			Handler:    _GameService_AddFriend_Handler,
+		},
+		{
+			MethodName: "FriendList",
+			Handler:    _GameService_FriendList_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

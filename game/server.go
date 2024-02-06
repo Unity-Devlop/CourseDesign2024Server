@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 	"runtime"
 	"time"
@@ -34,6 +36,19 @@ func (s *Server) Run(tickInterval uint32) {
 	s.tickInterval = tickInterval
 	s.publicChat.Run(tickInterval)
 	s.bubbleChat.Run(tickInterval)
+
+	// 判断表是否存在 不存在则自动创建
+	if !s.Db.Migrator().HasTable(&UserInfo{}) {
+		// 创建表
+		err := s.Db.Migrator().CreateTable(&UserInfo{})
+		fmt.Printf("CreateTable UserInfo err: %v\n", err)
+	}
+
+	if !s.Db.Migrator().HasTable(&Friendship{}) {
+		// 创建表
+		err := s.Db.Migrator().CreateTable(&Friendship{})
+		fmt.Printf("CreateTable Friendship err: %v\n", err)
+	}
 }
 
 func (s *Server) CreateCharacter(ctx context.Context, in *pb.CreateCharacterRequest) (*pb.CreateCharacterResponse, error) {
@@ -62,9 +77,6 @@ func (s *Server) CreateCharacter(ctx context.Context, in *pb.CreateCharacterRequ
 	// 更新数据库
 	userInfo.HasCharacter = true
 	userInfo.CharacterName = in.CharacterName
-	userInfo.Pos.x = 0
-	userInfo.Pos.y = 0
-	userInfo.Pos.z = 0
 
 	err := s.Db.Model(&userInfo).Updates(userInfo).Error
 	//err := s.Db.Save(&userInfo).Error
@@ -102,9 +114,6 @@ func (s *Server) UserInfo(ctx context.Context, in *pb.UserInfoRequest) (*pb.User
 		Uid:           userInfo.Uid,
 		HasCharacter:  userInfo.HasCharacter,
 		CharacterName: userInfo.CharacterName,
-		CharacterPosX: userInfo.Pos.x,
-		CharacterPosY: userInfo.Pos.y,
-		CharacterPosZ: userInfo.Pos.z,
 	}, nil
 }
 
@@ -136,16 +145,6 @@ func (s *Server) UserRegister(ctx context.Context, in *pb.UserRegisterRequest) (
 	errorMsg.Code = pb.StatusCode_ERROR
 	response.Error = &errorMsg
 
-	// 判断表是否存在 不存在则自动创建
-	if !s.Db.Migrator().HasTable(&UserInfo{}) {
-		// 创建表
-		err := s.Db.Migrator().CreateTable(&UserInfo{})
-		fmt.Printf("UserRegister: create table UserInfo\n")
-		if err != nil {
-			return &response, err
-		}
-	}
-
 	var info UserInfo
 	// Uid 相同
 	result := s.Db.First(&info, "uid = ?", in.Uid)
@@ -165,11 +164,6 @@ func (s *Server) UserRegister(ctx context.Context, in *pb.UserRegisterRequest) (
 		info = UserInfo{
 			Uid:      in.Uid,
 			Password: string(bytes),
-			Pos: Vector3{
-				x: 0,
-				y: 0,
-				z: 0,
-			},
 		}
 		s.Db.Create(&info)
 
@@ -206,18 +200,17 @@ func (s *Server) BubbleChat(ctx context.Context, in *pb.ChatMessage) (*pb.ErrorM
 
 func (s *Server) StartPublicChat(in *pb.ChatRequest, stream pb.GameService_StartPublicChatServer) error {
 	if s.uid2publicChat[in.Uid] != nil {
-		fmt.Printf("Start PublicChat: uid %d already in chat\n", in.Uid)
-		fmt.Printf("End PublicChat: uid %d\n", in.Uid)
+		fmt.Printf(" PublicChat: uid %d already in chat now close the pre one\n", in.Uid)
 		s.publicChat.UnListen(*s.uid2publicChat[in.Uid])
 	}
-	fmt.Printf("Start PublicChat: uid %d\n", in.Uid)
+	fmt.Printf("Start PublicChat Channel: uid %d\n", in.Uid)
 	// 注册广播
 	var pushChan = s.publicChat.Listen()
 	// 记录这个通道
 	s.uid2publicChat[in.Uid] = &pushChan
 	defer func() {
 		s.publicChat.UnListen(pushChan)
-		fmt.Printf("End PublicChat: uid %d\n", in.Uid)
+		fmt.Printf("End PublicChat Channel: uid %d\n", in.Uid)
 	}()
 	return s.startChat("PublicChat", in.Uid, pushChan, stream)
 }
@@ -225,11 +218,10 @@ func (s *Server) StartPublicChat(in *pb.ChatRequest, stream pb.GameService_Start
 func (s *Server) StartBubbleChat(in *pb.ChatRequest, stream pb.GameService_StartBubbleChatServer) error {
 	//
 	if s.uid2bubbleChat[in.Uid] != nil {
-		fmt.Printf("Start BubbleChat: uid %d already in chat\n", in.Uid)
-		fmt.Printf("End BubbleChat: uid %d\n", in.Uid)
+		fmt.Printf("Start BubbleChat: uid %d already in chat now close the pre one\n", in.Uid)
 		s.bubbleChat.UnListen(*s.uid2bubbleChat[in.Uid])
 	}
-	fmt.Printf("Start BubbleChat: uid %d\n", in.Uid)
+	fmt.Printf("Start BubbleChat Channel: uid %d\n", in.Uid)
 	// 注册广播
 	var pushChan = s.bubbleChat.Listen()
 	// 记录这个通道
@@ -243,9 +235,6 @@ func (s *Server) StartBubbleChat(in *pb.ChatRequest, stream pb.GameService_Start
 }
 
 func (s *Server) startChat(name string, uid uint32, c chan *pb.ChatMessage, stream pb.GameService_StartBubbleChatServer) error {
-	defer func() {
-		fmt.Printf("%s chat end: uid %d\n", name, uid)
-	}()
 	for {
 		select {
 		case msg, ok := <-c:
@@ -268,4 +257,86 @@ func (s *Server) startChat(name string, uid uint32, c chan *pb.ChatMessage, stre
 			time.Sleep(time.Duration(s.tickInterval) * time.Millisecond)
 		}
 	}
+}
+
+func (s *Server) StopPublicChat(ctx context.Context, in *pb.ChatRequest) (*pb.ErrorMessage, error) {
+	if s.uid2publicChat[in.Uid] != nil {
+		fmt.Printf("Stop PublicChat: uid %d\n", in.Uid)
+		s.publicChat.UnListen(*s.uid2publicChat[in.Uid])
+		delete(s.uid2publicChat, in.Uid)
+		return &pb.ErrorMessage{
+			Code: pb.StatusCode_OK,
+		}, nil
+	}
+	return &pb.ErrorMessage{
+		Code: pb.StatusCode_ERROR,
+		Msg:  fmt.Sprintf("StopPublicChat: uid %d not in chat", in.Uid),
+	}, nil
+}
+
+func (s *Server) StopBubbleChat(ctx context.Context, in *pb.ChatRequest) (*pb.ErrorMessage, error) {
+	if s.uid2bubbleChat[in.Uid] != nil {
+		fmt.Printf("Stop BubbleChat: uid %d\n", in.Uid)
+		s.bubbleChat.UnListen(*s.uid2bubbleChat[in.Uid])
+		delete(s.uid2bubbleChat, in.Uid)
+		return &pb.ErrorMessage{
+			Code: pb.StatusCode_OK,
+		}, nil
+	}
+	return &pb.ErrorMessage{
+		Code: pb.StatusCode_ERROR,
+		Msg:  fmt.Sprintf("StopBubbleChat: uid %d not in chat", in.Uid),
+	}, nil
+}
+
+func (s *Server) SearchFriend(ctx context.Context, in *pb.SearchFriendRequest) (*pb.SearchFriendResponse, error) {
+
+	var errorMsg = &pb.ErrorMessage{
+		Code: pb.StatusCode_ERROR,
+	}
+	var response = &pb.SearchFriendResponse{
+		Error: errorMsg,
+	}
+
+	if in.SearcherUid == in.TargetUid {
+		// 不能搜索自己
+		errorMsg.Msg = fmt.Sprintf("不能搜索自己 uid:%d", in.SearcherUid)
+		return response, nil
+	}
+
+	var srcUser UserInfo
+	var dstUser UserInfo
+
+	if s.Db.First(&srcUser, "uid = ?", in.SearcherUid).Error != nil {
+		// 进行搜索的玩家不存在
+		errorMsg.Msg = fmt.Sprintf("进行搜索的玩家不存在 uid:%d", in.SearcherUid)
+		return response, nil
+	}
+	if s.Db.First(&dstUser, "uid = ?", in.TargetUid).Error != nil {
+		// 搜索的目标玩家不存在
+		errorMsg.Msg = fmt.Sprintf("搜索的目标玩家不存在 uid:%d", in.TargetUid)
+		return response, nil
+	}
+
+	// 到这里说明两个玩家都存在
+	errorMsg.Code = pb.StatusCode_OK
+
+	var friendship Friendship
+	// 为了避免重复存储 保证小的uid在前面
+	var smallId = min(in.SearcherUid, in.TargetUid)
+	var bigId = max(in.SearcherUid, in.TargetUid)
+	// 看下两个人是否有好友关系
+	if s.Db.First(&friendship, "SrcUid = ? AND DstUid = ?", smallId, bigId).Error != nil {
+		response.IsFriend = false
+	} else {
+		response.IsFriend = true
+	}
+	return response, nil
+}
+
+func (s *Server) AddFriend(ctx context.Context, in *pb.AddFriendRequest) (*pb.ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddFriend not implemented")
+}
+func (s *Server) FriendList(ctx context.Context, in *pb.FriendListRequest) (*pb.FriendListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FriendList not implemented")
 }
