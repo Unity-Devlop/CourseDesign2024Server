@@ -58,21 +58,23 @@ func (s *Server) CreateCharacter(ctx context.Context, in *pb.CreateCharacterRequ
 
 	var userInfo UserInfo
 	result := s.Db.First(&userInfo, "uid = ?", in.Uid)
-	if result.Error == gorm.ErrRecordNotFound {
-		errorMsg.Msg = fmt.Sprintf("CreateCharacter: uid %d not found", in.Uid)
-		fmt.Println(errorMsg.Msg)
-		return &response, nil
-	}
 	if result.Error != nil {
-		fmt.Printf("CreateCharacter: uid %d failed err:%v \n", in.Uid, result.Error)
-		errorMsg.Msg = fmt.Sprintf("unknown error: %v", result.Error)
-		return &response, nil
-	}
-	if userInfo.HasCharacter {
-		errorMsg.Msg = fmt.Sprintf("CreateCharacter: uid %d already has character", in.Uid)
+		errorMsg.Msg = fmt.Sprintf("用户[%d]创建角色失败,err:%v", in.Uid, result.Error)
 		fmt.Println(errorMsg.Msg)
 		return &response, nil
 	}
+
+	if userInfo.HasCharacter {
+		errorMsg.Msg = fmt.Sprintf("用户:[%d]已经创建过角色", in.Uid)
+		fmt.Println(errorMsg.Msg)
+		return &response, nil
+	}
+	var reason string
+	if !CharacterNameCheck(in.CharacterName, &reason) {
+		response.Error.Msg = reason
+		return &response, nil
+	}
+
 	// 更新数据库
 	userInfo.HasCharacter = true
 	userInfo.CharacterName = in.CharacterName
@@ -311,9 +313,22 @@ func (s *Server) SearchFriend(ctx context.Context, in *pb.SearchFriendRequest) (
 		errorMsg.Msg = fmt.Sprintf("进行搜索的玩家不存在 uid:%d", in.SearcherUid)
 		return response, nil
 	}
+
+	if !srcUser.HasCharacter {
+		// 进行搜索的玩家没有角色
+		errorMsg.Msg = fmt.Sprintf("进行搜索的玩家没有角色 uid:%d", in.SearcherUid)
+		return response, nil
+	}
+
 	if s.Db.First(&dstUser, "uid = ?", in.TargetUid).Error != nil {
 		// 搜索的目标玩家不存在
 		errorMsg.Msg = fmt.Sprintf("搜索的目标玩家不存在 uid:%d", in.TargetUid)
+		return response, nil
+	}
+
+	if !dstUser.HasCharacter {
+		// 搜索的目标玩家没有角色
+		errorMsg.Msg = fmt.Sprintf("搜索的目标玩家没有角色 uid:%d", in.TargetUid)
 		return response, nil
 	}
 

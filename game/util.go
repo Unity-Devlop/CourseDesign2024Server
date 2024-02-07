@@ -19,3 +19,15 @@ func PasswordCheck(str string, reason *string) bool {
 	}
 	return true
 }
+
+func CharacterNameCheck(str string, reason *string) bool {
+	if len(str) < 1 {
+		*reason = "Character name length must be greater than 1"
+		return false
+	}
+	if len(str) > 7 {
+		*reason = "Character name length must be less than 7"
+		return false
+	}
+	return true
+}
