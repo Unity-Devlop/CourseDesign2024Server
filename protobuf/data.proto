@@ -60,6 +60,10 @@ message ChatRequest{
   uint32 uid = 1;
 }
 
+message StopChatRequest{
+  uint32 uid = 1;
+}
+
 message ChatMessage{
   uint32 uid = 1;
   string  msg = 2;
@@ -121,8 +125,8 @@ service GameService
   rpc BubbleChat(ChatMessage) returns (ErrorMessage); // 气泡聊天
   rpc StartPublicChat(ChatRequest) returns (stream ChatMessage); // 公屏聊天
   rpc StartBubbleChat(ChatRequest) returns (stream ChatMessage); // 气泡聊天
-  rpc StopPublicChat(ChatRequest) returns (ErrorMessage); // 公屏聊天
-  rpc StopBubbleChat(ChatRequest) returns (ErrorMessage); // 气泡聊天
+  rpc StopPublicChat(StopChatRequest) returns (ErrorMessage); // 公屏聊天
+  rpc StopBubbleChat(StopChatRequest) returns (ErrorMessage); // 气泡聊天
 
   // 好友相关
   rpc SearchFriend(SearchFriendRequest) returns (SearchFriendResponse);// 搜索好友

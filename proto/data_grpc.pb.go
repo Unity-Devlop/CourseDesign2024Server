@@ -49,8 +49,8 @@ type GameServiceClient interface {
 	BubbleChat(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*ErrorMessage, error)
 	StartPublicChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (GameService_StartPublicChatClient, error)
 	StartBubbleChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (GameService_StartBubbleChatClient, error)
-	StopPublicChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
-	StopBubbleChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	StopPublicChat(ctx context.Context, in *StopChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	StopBubbleChat(ctx context.Context, in *StopChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
 	// 好友相关
 	SearchFriend(ctx context.Context, in *SearchFriendRequest, opts ...grpc.CallOption) (*SearchFriendResponse, error)
 	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
@@ -184,7 +184,7 @@ func (x *gameServiceStartBubbleChatClient) Recv() (*ChatMessage, error) {
 	return m, nil
 }
 
-func (c *gameServiceClient) StopPublicChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+func (c *gameServiceClient) StopPublicChat(ctx context.Context, in *StopChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
 	out := new(ErrorMessage)
 	err := c.cc.Invoke(ctx, GameService_StopPublicChat_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -193,7 +193,7 @@ func (c *gameServiceClient) StopPublicChat(ctx context.Context, in *ChatRequest,
 	return out, nil
 }
 
-func (c *gameServiceClient) StopBubbleChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+func (c *gameServiceClient) StopBubbleChat(ctx context.Context, in *StopChatRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
 	out := new(ErrorMessage)
 	err := c.cc.Invoke(ctx, GameService_StopBubbleChat_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -252,8 +252,8 @@ type GameServiceServer interface {
 	BubbleChat(context.Context, *ChatMessage) (*ErrorMessage, error)
 	StartPublicChat(*ChatRequest, GameService_StartPublicChatServer) error
 	StartBubbleChat(*ChatRequest, GameService_StartBubbleChatServer) error
-	StopPublicChat(context.Context, *ChatRequest) (*ErrorMessage, error)
-	StopBubbleChat(context.Context, *ChatRequest) (*ErrorMessage, error)
+	StopPublicChat(context.Context, *StopChatRequest) (*ErrorMessage, error)
+	StopBubbleChat(context.Context, *StopChatRequest) (*ErrorMessage, error)
 	// 好友相关
 	SearchFriend(context.Context, *SearchFriendRequest) (*SearchFriendResponse, error)
 	AddFriend(context.Context, *AddFriendRequest) (*ErrorMessage, error)
@@ -290,10 +290,10 @@ func (UnimplementedGameServiceServer) StartPublicChat(*ChatRequest, GameService_
 func (UnimplementedGameServiceServer) StartBubbleChat(*ChatRequest, GameService_StartBubbleChatServer) error {
 	return status.Errorf(codes.Unimplemented, "method StartBubbleChat not implemented")
 }
-func (UnimplementedGameServiceServer) StopPublicChat(context.Context, *ChatRequest) (*ErrorMessage, error) {
+func (UnimplementedGameServiceServer) StopPublicChat(context.Context, *StopChatRequest) (*ErrorMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopPublicChat not implemented")
 }
-func (UnimplementedGameServiceServer) StopBubbleChat(context.Context, *ChatRequest) (*ErrorMessage, error) {
+func (UnimplementedGameServiceServer) StopBubbleChat(context.Context, *StopChatRequest) (*ErrorMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopBubbleChat not implemented")
 }
 func (UnimplementedGameServiceServer) SearchFriend(context.Context, *SearchFriendRequest) (*SearchFriendResponse, error) {
@@ -472,7 +472,7 @@ func (x *gameServiceStartBubbleChatServer) Send(m *ChatMessage) error {
 }
 
 func _GameService_StopPublicChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChatRequest)
+	in := new(StopChatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -484,13 +484,13 @@ func _GameService_StopPublicChat_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: GameService_StopPublicChat_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServiceServer).StopPublicChat(ctx, req.(*ChatRequest))
+		return srv.(GameServiceServer).StopPublicChat(ctx, req.(*StopChatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _GameService_StopBubbleChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChatRequest)
+	in := new(StopChatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -502,7 +502,7 @@ func _GameService_StopBubbleChat_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: GameService_StopBubbleChat_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServiceServer).StopBubbleChat(ctx, req.(*ChatRequest))
+		return srv.(GameServiceServer).StopBubbleChat(ctx, req.(*StopChatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

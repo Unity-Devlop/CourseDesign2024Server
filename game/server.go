@@ -260,7 +260,7 @@ func (s *Server) startChat(name string, uid uint32, c chan *pb.ChatMessage, stre
 	}
 }
 
-func (s *Server) StopPublicChat(ctx context.Context, in *pb.ChatRequest) (*pb.ErrorMessage, error) {
+func (s *Server) StopPublicChat(ctx context.Context, in *pb.StopChatRequest) (*pb.ErrorMessage, error) {
 	if s.uid2publicChat[in.Uid] != nil {
 		fmt.Printf("Stop PublicChat: uid %d\n", in.Uid)
 		s.publicChat.UnListen(*s.uid2publicChat[in.Uid])
@@ -275,7 +275,7 @@ func (s *Server) StopPublicChat(ctx context.Context, in *pb.ChatRequest) (*pb.Er
 	}, nil
 }
 
-func (s *Server) StopBubbleChat(ctx context.Context, in *pb.ChatRequest) (*pb.ErrorMessage, error) {
+func (s *Server) StopBubbleChat(ctx context.Context, in *pb.StopChatRequest) (*pb.ErrorMessage, error) {
 	if s.uid2bubbleChat[in.Uid] != nil {
 		fmt.Printf("Stop BubbleChat: uid %d\n", in.Uid)
 		s.bubbleChat.UnListen(*s.uid2bubbleChat[in.Uid])
