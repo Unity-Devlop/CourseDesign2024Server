@@ -87,8 +87,13 @@ message SearchFriendResponse{
 }
 
 message AddFriendRequest{
-  uint32 uid = 1;
-  uint32 friendUid = 2;
+  uint32 srcUid = 1;
+  uint32 targetUid = 2;
+}
+
+message RemoveFriendRequest{
+  uint32 srcUid = 1;
+  uint32 targetUid = 2;
 }
 
 message FriendListRequest{
@@ -98,8 +103,8 @@ message FriendListRequest{
 message FriendListResponse{
   ErrorMessage error = 1;
   uint32 uid = 2;
-  repeated uint32 friendUid = 3;
-  repeated string friendName = 4;
+  repeated uint32 friendUidList = 3;
+  repeated string friendNameList = 4;
 }
 
 
@@ -123,6 +128,7 @@ service GameService
   rpc SearchFriend(SearchFriendRequest) returns (SearchFriendResponse);// 搜索好友
   rpc AddFriend(AddFriendRequest) returns (ErrorMessage);// 添加好友
   rpc FriendList(FriendListRequest) returns (FriendListResponse);// 好友列表
+  rpc RemoveFriend(RemoveFriendRequest) returns (ErrorMessage);// 删除好友
 
   // TODO 客户端上传
 

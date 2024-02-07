@@ -18,3 +18,7 @@ go mod tidy
 python ./gen.py --proto_dir="./protobuf" --lang=go --gen_dir=./proto
 python ./gen.py --proto_dir="./protobuf" --lang=csharp --gen_dir=../CourseDesign2024/Assets/Assemblies/Proto
 ```
+
+- Grpc服务测试
+
+使用bloomgrpc测试grpc服务

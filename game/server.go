@@ -5,8 +5,6 @@ import (
 	"context"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 	"runtime"
 	"time"
@@ -55,6 +53,7 @@ func (s *Server) CreateCharacter(ctx context.Context, in *pb.CreateCharacterRequ
 	var response pb.CreateCharacterResponse
 	var errorMsg pb.ErrorMessage
 	response.Error = &errorMsg
+	response.Uid = in.Uid
 	errorMsg.Code = pb.StatusCode_ERROR
 
 	var userInfo UserInfo
@@ -318,25 +317,160 @@ func (s *Server) SearchFriend(ctx context.Context, in *pb.SearchFriendRequest) (
 		return response, nil
 	}
 
-	// 到这里说明两个玩家都存在
+	// 到这里说明两个玩家都存在 填充返回值
 	errorMsg.Code = pb.StatusCode_OK
+
+	response.SearcherUid = srcUser.Uid
+	response.Name = dstUser.CharacterName
+	response.TargetUid = dstUser.Uid
 
 	var friendship Friendship
 	// 为了避免重复存储 保证小的uid在前面
 	var smallId = min(in.SearcherUid, in.TargetUid)
 	var bigId = max(in.SearcherUid, in.TargetUid)
 	// 看下两个人是否有好友关系
-	if s.Db.First(&friendship, "SrcUid = ? AND DstUid = ?", smallId, bigId).Error != nil {
+	if s.Db.First(&friendship, "src_uid = ? AND dst_uid = ?", smallId, bigId).Error != nil {
 		response.IsFriend = false
 	} else {
 		response.IsFriend = true
 	}
+
 	return response, nil
 }
 
 func (s *Server) AddFriend(ctx context.Context, in *pb.AddFriendRequest) (*pb.ErrorMessage, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddFriend not implemented")
+	var response = &pb.ErrorMessage{
+		Code: pb.StatusCode_ERROR,
+	}
+
+	if in.SrcUid == in.TargetUid {
+		response.Msg = fmt.Sprintf("不能添加自己为好友 uid:%d", in.SrcUid)
+		return response, nil
+	}
+
+	// 检查两个用户是否存在
+	if s.Db.First(&UserInfo{}, "uid = ?", in.SrcUid).Error != nil {
+		response.Msg = fmt.Sprintf("添加好友,发起用户[%d]不存在", in.SrcUid)
+		return response, nil
+	}
+	if s.Db.First(&UserInfo{}, "uid = ?", in.TargetUid).Error != nil {
+		response.Msg = fmt.Sprintf("添加好友,目标用户[%d]不存在", in.TargetUid)
+		return response, nil
+	}
+
+	// 判断是否已经是好友
+	var friendship Friendship
+	// 为了避免重复存储 保证小的uid在前面
+	var smallId = min(in.SrcUid, in.TargetUid)
+	var bigId = max(in.SrcUid, in.TargetUid)
+	// 看下两个人是否有好友关系
+	err := s.Db.First(&friendship, "src_uid = ? AND dst_uid = ?", smallId, bigId).Error
+	if err == nil {
+		response.Msg = fmt.Sprintf("添加好友,用户[%d]和用户[%d]已经是好友", in.SrcUid, in.TargetUid)
+		return response, nil
+	}
+
+	// 添加好友
+	friendship = Friendship{
+		SrcUid: smallId,
+		DstUid: bigId,
+	}
+
+	if s.Db.Create(&friendship).Error != nil {
+		response.Msg = fmt.Sprintf("添加好友,用户[%d]和用户[%d]添加好友失败", in.SrcUid, in.TargetUid)
+		return response, nil
+	}
+
+	response.Code = pb.StatusCode_OK
+	return response, nil
 }
+
 func (s *Server) FriendList(ctx context.Context, in *pb.FriendListRequest) (*pb.FriendListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FriendList not implemented")
+
+	var errorMsg = &pb.ErrorMessage{
+		Code: pb.StatusCode_ERROR,
+	}
+	var response = &pb.FriendListResponse{
+		Error: errorMsg,
+	}
+
+	if s.Db.First(&UserInfo{}, "uid = ?", in.Uid).Error != nil {
+		errorMsg.Msg = fmt.Sprintf("用户[%d]不存在", in.Uid)
+		return response, nil
+	}
+
+	errorMsg.Code = pb.StatusCode_OK
+	response.Uid = in.Uid
+
+	// 查询好友列表
+	// 首先查FriendShip表中src_uid为in.Uid的记录
+	// 然后查dst_uid为in.Uid的记录
+	// 合并两个结果
+	var friendships []Friendship
+	var friendUidList []uint32
+	var friendNameList []string
+
+	// 查找src_uid为in.Uid的记录
+	s.Db.Model(&Friendship{}).Find(&friendships, "src_uid = ?", in.Uid)
+	for _, friendship := range friendships {
+		if friendship.DstUid == in.Uid {
+			continue
+		}
+		friendUidList = append(friendUidList, friendship.DstUid)
+	}
+	// 查找dst_uid为in.Uid的记录
+	s.Db.Model(&Friendship{}).Find(&friendships, "dst_uid = ?", in.Uid)
+	for _, friendship := range friendships {
+		if friendship.DstUid == in.Uid {
+			continue
+		}
+		friendUidList = append(friendUidList, friendship.DstUid)
+	}
+	// 不需要去重 因为插入的时候保证 src_uid < dst_uid
+
+	// 查询好友的名字
+	for _, uid := range friendUidList {
+		if uid == in.Uid {
+			continue
+		}
+		var userInfo UserInfo
+		s.Db.First(&userInfo, "uid = ?", uid)
+		friendNameList = append(friendNameList, userInfo.CharacterName)
+	}
+
+	response.FriendUidList = friendUidList
+	response.FriendNameList = friendNameList
+
+	return response, nil
+}
+
+func (s *Server) RemoveFriend(ctx context.Context, in *pb.RemoveFriendRequest) (*pb.ErrorMessage, error) {
+	var response = &pb.ErrorMessage{
+		Code: pb.StatusCode_ERROR,
+	}
+
+	if in.SrcUid == in.TargetUid {
+		response.Msg = fmt.Sprintf("不能删除自己 uid:%d", in.SrcUid)
+		return response, nil
+	}
+
+	var friendship Friendship
+	// 为了避免重复存储 保证小的uid在前面
+	var smallId = min(in.SrcUid, in.TargetUid)
+	var bigId = max(in.SrcUid, in.TargetUid)
+
+	// 看下两个人是否有好友关系
+	if s.Db.First(&friendship, "src_uid = ? AND dst_uid = ?", smallId, bigId).Error != nil {
+		response.Msg = fmt.Sprintf("用户[%d]和用户[%d]不是好友", in.SrcUid, in.TargetUid)
+		return response, nil
+	}
+	// 删除好友
+	if s.Db.Model(&Friendship{}).Delete(&friendship, "src_uid = ? AND dst_uid = ?", smallId, bigId).Error != nil {
+		response.Msg = fmt.Sprintf("用户[%d]和用户[%d]删除好友失败", in.SrcUid, in.TargetUid)
+		return response, nil
+	}
+
+	response.Code = pb.StatusCode_OK
+
+	return response, nil
 }

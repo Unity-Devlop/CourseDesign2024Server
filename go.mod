@@ -1,6 +1,6 @@
 module Server
 
-go 1.19
+go 1.21.6
 
 require (
 	golang.org/x/net v0.18.0

@@ -4,6 +4,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// UserInfo 玩家信息表
+// 存储一些基本信息: uid, 密码, 是否有游戏角色, 角色的名字
 type UserInfo struct {
 	gorm.Model
 	Uid           uint32 `gorm:"primaryKey;unique"` // 玩家的uid(账号) 42亿对于我们这个游戏来说足够了
@@ -18,6 +20,6 @@ type UserInfo struct {
 // DstUid -> SrcUid 是好友
 type Friendship struct {
 	gorm.Model
-	SrcUid uint32 `gorm:"primaryKey;unique"` //
-	DstUid uint32 `gorm:"primaryKey;unique"` //
+	SrcUid uint32 `gorm:"primaryKey"` //
+	DstUid uint32 `gorm:"primaryKey"` //
 }
