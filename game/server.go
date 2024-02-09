@@ -110,12 +110,11 @@ func (s *Server) UserInfo(ctx context.Context, in *pb.UserInfoRequest) (*pb.User
 		return &response, nil
 	}
 	errorMsg.Code = pb.StatusCode_OK
-	return &pb.UserInfoResponse{
-		Error:         &errorMsg,
-		Uid:           userInfo.Uid,
-		HasCharacter:  userInfo.HasCharacter,
-		CharacterName: userInfo.CharacterName,
-	}, nil
+	response.Uid = userInfo.Uid
+	response.HasCharacter = userInfo.HasCharacter
+	response.CharacterName = userInfo.CharacterName
+	fmt.Printf("UserInfo: uid %d success\n", in.Uid)
+	return &response, nil
 }
 
 func (s *Server) UserLogin(ctx context.Context, in *pb.UserLoginRequest) (*pb.UserLoginResponse, error) {
