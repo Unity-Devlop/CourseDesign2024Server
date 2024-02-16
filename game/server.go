@@ -165,12 +165,12 @@ func (s *Server) UserRegister(ctx context.Context, in *pb.UserRegisterRequest) (
 			Uid:      in.Uid,
 			Password: string(bytes),
 		}
-		s.Db.Create(&info)
-
-		fmt.Printf("UserRegister: uid %d success\n", in.Uid)
-		errorMsg.Code = pb.StatusCode_OK
-		response.Uid = info.Uid
-		return &response, nil
+		if s.Db.Create(&info).Error == nil {
+			fmt.Printf("UserRegister: uid %d success\n", in.Uid)
+			errorMsg.Code = pb.StatusCode_OK
+			response.Uid = info.Uid
+			return &response, nil
+		}
 	} else if result.Error != nil {
 		fmt.Printf("UserRegister: uid %d failed err:%v \n", in.Uid, result.Error)
 	}
