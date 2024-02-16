@@ -435,10 +435,10 @@ func (s *Server) FriendList(ctx context.Context, in *pb.FriendListRequest) (*pb.
 	// 查找dst_uid为in.Uid的记录
 	s.Db.Model(&Friendship{}).Find(&friendships, "dst_uid = ?", in.Uid)
 	for _, friendship := range friendships {
-		if friendship.DstUid == in.Uid {
+		if friendship.SrcUid == in.Uid {
 			continue
 		}
-		friendUidList = append(friendUidList, friendship.DstUid)
+		friendUidList = append(friendUidList, friendship.SrcUid)
 	}
 	// 不需要去重 因为插入的时候保证 src_uid < dst_uid
 
