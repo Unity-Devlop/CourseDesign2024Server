@@ -7,7 +7,10 @@
 package proto
 
 import (
+	context "context"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -15,12 +18,25 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-const ()
+const (
+	GameService_GetUid_FullMethodName        = "/proto.GameService/GetUid"
+	GameService_RegisterUser_FullMethodName  = "/proto.GameService/RegisterUser"
+	GameService_GetFriendList_FullMethodName = "/proto.GameService/GetFriendList"
+	GameService_AddFriend_FullMethodName     = "/proto.GameService/AddFriend"
+	GameService_DeleteFriend_FullMethodName  = "/proto.GameService/DeleteFriend"
+	GameService_SearchFriend_FullMethodName  = "/proto.GameService/SearchFriend"
+)
 
 // GameServiceClient is the client API for GameService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GameServiceClient interface {
+	GetUid(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*UidResponse, error)
+	RegisterUser(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	GetFriendList(ctx context.Context, in *FriendListRequest, opts ...grpc.CallOption) (*FriendShipList, error)
+	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	DeleteFriend(ctx context.Context, in *DeleteFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	SearchFriend(ctx context.Context, in *SearchFriendRequest, opts ...grpc.CallOption) (*SearchFriendResponse, error)
 }
 
 type gameServiceClient struct {
@@ -31,10 +47,70 @@ func NewGameServiceClient(cc grpc.ClientConnInterface) GameServiceClient {
 	return &gameServiceClient{cc}
 }
 
+func (c *gameServiceClient) GetUid(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*UidResponse, error) {
+	out := new(UidResponse)
+	err := c.cc.Invoke(ctx, GameService_GetUid_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) RegisterUser(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_RegisterUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) GetFriendList(ctx context.Context, in *FriendListRequest, opts ...grpc.CallOption) (*FriendShipList, error) {
+	out := new(FriendShipList)
+	err := c.cc.Invoke(ctx, GameService_GetFriendList_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_AddFriend_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) DeleteFriend(ctx context.Context, in *DeleteFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_DeleteFriend_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) SearchFriend(ctx context.Context, in *SearchFriendRequest, opts ...grpc.CallOption) (*SearchFriendResponse, error) {
+	out := new(SearchFriendResponse)
+	err := c.cc.Invoke(ctx, GameService_SearchFriend_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GameServiceServer is the server API for GameService service.
 // All implementations must embed UnimplementedGameServiceServer
 // for forward compatibility
 type GameServiceServer interface {
+	GetUid(context.Context, *UidRequest) (*UidResponse, error)
+	RegisterUser(context.Context, *RegisterRequest) (*ErrorMessage, error)
+	GetFriendList(context.Context, *FriendListRequest) (*FriendShipList, error)
+	AddFriend(context.Context, *AddFriendRequest) (*ErrorMessage, error)
+	DeleteFriend(context.Context, *DeleteFriendRequest) (*ErrorMessage, error)
+	SearchFriend(context.Context, *SearchFriendRequest) (*SearchFriendResponse, error)
 	mustEmbedUnimplementedGameServiceServer()
 }
 
@@ -42,6 +118,24 @@ type GameServiceServer interface {
 type UnimplementedGameServiceServer struct {
 }
 
+func (UnimplementedGameServiceServer) GetUid(context.Context, *UidRequest) (*UidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUid not implemented")
+}
+func (UnimplementedGameServiceServer) RegisterUser(context.Context, *RegisterRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
+}
+func (UnimplementedGameServiceServer) GetFriendList(context.Context, *FriendListRequest) (*FriendShipList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFriendList not implemented")
+}
+func (UnimplementedGameServiceServer) AddFriend(context.Context, *AddFriendRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddFriend not implemented")
+}
+func (UnimplementedGameServiceServer) DeleteFriend(context.Context, *DeleteFriendRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFriend not implemented")
+}
+func (UnimplementedGameServiceServer) SearchFriend(context.Context, *SearchFriendRequest) (*SearchFriendResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchFriend not implemented")
+}
 func (UnimplementedGameServiceServer) mustEmbedUnimplementedGameServiceServer() {}
 
 // UnsafeGameServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -55,13 +149,146 @@ func RegisterGameServiceServer(s grpc.ServiceRegistrar, srv GameServiceServer) {
 	s.RegisterService(&GameService_ServiceDesc, srv)
 }
 
+func _GameService_GetUid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).GetUid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_GetUid_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).GetUid(ctx, req.(*UidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).RegisterUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_RegisterUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).RegisterUser(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_GetFriendList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FriendListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).GetFriendList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_GetFriendList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).GetFriendList(ctx, req.(*FriendListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_AddFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddFriendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).AddFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_AddFriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).AddFriend(ctx, req.(*AddFriendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_DeleteFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFriendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).DeleteFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_DeleteFriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).DeleteFriend(ctx, req.(*DeleteFriendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_SearchFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchFriendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).SearchFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_SearchFriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).SearchFriend(ctx, req.(*SearchFriendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GameService_ServiceDesc is the grpc.ServiceDesc for GameService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var GameService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.GameService",
 	HandlerType: (*GameServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "game_service.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetUid",
+			Handler:    _GameService_GetUid_Handler,
+		},
+		{
+			MethodName: "RegisterUser",
+			Handler:    _GameService_RegisterUser_Handler,
+		},
+		{
+			MethodName: "GetFriendList",
+			Handler:    _GameService_GetFriendList_Handler,
+		},
+		{
+			MethodName: "AddFriend",
+			Handler:    _GameService_AddFriend_Handler,
+		},
+		{
+			MethodName: "DeleteFriend",
+			Handler:    _GameService_DeleteFriend_Handler,
+		},
+		{
+			MethodName: "SearchFriend",
+			Handler:    _GameService_SearchFriend_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "game_service.proto",
 }

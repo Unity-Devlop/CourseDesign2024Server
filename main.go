@@ -79,6 +79,10 @@ func StartGameService() {
 	}
 }
 
+func StartGlobalService() {
+
+}
+
 func main() {
 	go StartGameService()
 	//Console.ReadLine()

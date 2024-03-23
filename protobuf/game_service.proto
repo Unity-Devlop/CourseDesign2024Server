@@ -11,11 +11,64 @@ enum StatusCode{
 }
 
 message ErrorMessage{
-  StatusCode error = 1;
+  StatusCode code = 1;
   string content = 2;
 }
-//
+
+message FriendInfo{
+  string Uid = 1;
+  string Name = 2;
+}
+
+message FriendShipList{
+  ErrorMessage error = 1;
+  repeated FriendInfo list = 2;
+}
+
+message FriendListRequest{
+  string uid = 1;
+}
+
+message DeleteFriendRequest{
+  string senderUid = 1;
+  string targetUid = 2;
+}
+
+message AddFriendRequest{
+  string senderUid = 1;
+  string targetUid = 2;
+}
+
+message SearchFriendRequest{
+  string searcherUid = 1;
+  string targetUid = 2;
+}
+
+message SearchFriendResponse{
+  ErrorMessage error = 1;
+  string targetUid = 2;
+  string targetName = 3;
+  bool isFriend = 4;
+}
+
+message RegisterRequest{
+  string uid = 1;
+  string name = 2;
+}
+
+message UidRequest{}
+
+message UidResponse{
+  ErrorMessage error = 1;
+  string uid = 2;
+}
+
 service GameService
 {
-
+  rpc GetUid(UidRequest) returns (UidResponse);//获取一个uid
+  rpc RegisterUser(RegisterRequest) returns (ErrorMessage);
+  rpc GetFriendList(FriendListRequest) returns (FriendShipList);
+  rpc AddFriend(AddFriendRequest) returns (ErrorMessage);
+  rpc DeleteFriend(DeleteFriendRequest) returns (ErrorMessage);
+  rpc SearchFriend(SearchFriendRequest) returns (SearchFriendResponse);
 }

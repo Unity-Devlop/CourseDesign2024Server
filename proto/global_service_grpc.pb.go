@@ -19,7 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GlobalService_GetServerList_FullMethodName = "/proto.GlobalService/GetServerList"
+	GlobalService_GetServerList_FullMethodName    = "/proto.GlobalService/GetServerList"
+	GlobalService_RegisterServer_FullMethodName   = "/proto.GlobalService/RegisterServer"
+	GlobalService_UnRegisterServer_FullMethodName = "/proto.GlobalService/UnRegisterServer"
 )
 
 // GlobalServiceClient is the client API for GlobalService service.
@@ -27,6 +29,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GlobalServiceClient interface {
 	GetServerList(ctx context.Context, in *ServerListRequest, opts ...grpc.CallOption) (*ServerListResponse, error)
+	RegisterServer(ctx context.Context, in *RegisterServerRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	UnRegisterServer(ctx context.Context, in *UnRegisterServerRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
 }
 
 type globalServiceClient struct {
@@ -46,11 +50,31 @@ func (c *globalServiceClient) GetServerList(ctx context.Context, in *ServerListR
 	return out, nil
 }
 
+func (c *globalServiceClient) RegisterServer(ctx context.Context, in *RegisterServerRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GlobalService_RegisterServer_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *globalServiceClient) UnRegisterServer(ctx context.Context, in *UnRegisterServerRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GlobalService_UnRegisterServer_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GlobalServiceServer is the server API for GlobalService service.
 // All implementations must embed UnimplementedGlobalServiceServer
 // for forward compatibility
 type GlobalServiceServer interface {
 	GetServerList(context.Context, *ServerListRequest) (*ServerListResponse, error)
+	RegisterServer(context.Context, *RegisterServerRequest) (*ErrorMessage, error)
+	UnRegisterServer(context.Context, *UnRegisterServerRequest) (*ErrorMessage, error)
 	mustEmbedUnimplementedGlobalServiceServer()
 }
 
@@ -60,6 +84,12 @@ type UnimplementedGlobalServiceServer struct {
 
 func (UnimplementedGlobalServiceServer) GetServerList(context.Context, *ServerListRequest) (*ServerListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServerList not implemented")
+}
+func (UnimplementedGlobalServiceServer) RegisterServer(context.Context, *RegisterServerRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterServer not implemented")
+}
+func (UnimplementedGlobalServiceServer) UnRegisterServer(context.Context, *UnRegisterServerRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnRegisterServer not implemented")
 }
 func (UnimplementedGlobalServiceServer) mustEmbedUnimplementedGlobalServiceServer() {}
 
@@ -92,6 +122,42 @@ func _GlobalService_GetServerList_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GlobalService_RegisterServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GlobalServiceServer).RegisterServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GlobalService_RegisterServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GlobalServiceServer).RegisterServer(ctx, req.(*RegisterServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GlobalService_UnRegisterServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnRegisterServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GlobalServiceServer).UnRegisterServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GlobalService_UnRegisterServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GlobalServiceServer).UnRegisterServer(ctx, req.(*UnRegisterServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GlobalService_ServiceDesc is the grpc.ServiceDesc for GlobalService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +168,14 @@ var GlobalService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetServerList",
 			Handler:    _GlobalService_GetServerList_Handler,
+		},
+		{
+			MethodName: "RegisterServer",
+			Handler:    _GlobalService_RegisterServer_Handler,
+		},
+		{
+			MethodName: "UnRegisterServer",
+			Handler:    _GlobalService_UnRegisterServer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

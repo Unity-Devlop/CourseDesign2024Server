@@ -4,17 +4,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserId string
-
-// UserInfo 玩家信息表
-// 存储一些基本信息: uid, 密码, 是否有游戏角色, 角色的名字
-type UserInfo struct {
+// User 玩家信息表
+type User struct {
 	gorm.Model
-	Uid           UserId `gorm:"primaryKey;unique"` // 玩家的uid(账号) 42亿对于我们这个游戏来说足够了
-	Password      string // 密码
-	HasCharacter  bool   // 是否创建过游戏角色
-	CharacterName string `gorm:"not null"` // 角色名字
-	Coin          uint64 `gorm:"not null"` // 玩家的金币数量
+	Uid  string `gorm:"primaryKey;unique"` // 玩家的uid
+	Name string `gorm:"unique"`            // 玩家的昵称
+	//Password string `gorm:"not null"` // 玩家的密码
 }
 
 // Friendship 好友关系表
@@ -22,6 +17,6 @@ type UserInfo struct {
 // DstUid -> SrcUid 是好友
 type Friendship struct {
 	gorm.Model
-	SrcUid UserId `gorm:"primaryKey"` //
-	DstUid UserId `gorm:"primaryKey"` //
+	SrcUid string `gorm:"primaryKey"` //
+	DstUid string `gorm:"primaryKey"` //
 }
