@@ -16,7 +16,7 @@ go mod tidy
 - 生成proto
 ```shell
 python ./gen.py --proto_dir="./protobuf" --lang=go --gen_dir=./proto
-python ./gen.py --proto_dir="./protobuf" --lang=csharp --gen_dir=../CourseDesign2024/Assets/Assemblies/Proto
+python ./gen.py --proto_dir="./protobuf" --lang=csharp --gen_dir=../MonsterQuest/Assets/Assemblies/Proto
 ```
 
 - Grpc服务测试

@@ -83,15 +83,18 @@ def get_proto_path() -> ProtoInfo:
 
 
 if __name__ == "__main__":  # python gen.py --proto_dir=xxx --lang=xxx --gen_dir=xxx
-
+    # python ./gen.py --proto_dir="./protobuf" --lang=go --gen_dir=./proto
     ignore_dirs: set = {"bin", "windows_x64"}
     info = get_proto_path()
 
+    # 将python的执行目录放到环境变量中
+    # os.environ["PATH"] = os.environ["PATH"] + os.pathsep + os.path.dirname(os.path.abspath(sys.argv[0]))
+
     # 解析命令行参数
     parser = argparse.ArgumentParser()
-    parser.add_argument("--proto_dir", type=str, default=None)
+    parser.add_argument("--proto_dir", type=str, default="./protobuf")
     parser.add_argument("--lang", type=str, default="go")
-    parser.add_argument("--gen_dir", type=str, default=None)
+    parser.add_argument("--gen_dir", type=str, default="./proto")
     args = parser.parse_args()
 
     if args.proto_dir is None:
@@ -104,8 +107,9 @@ if __name__ == "__main__":  # python gen.py --proto_dir=xxx --lang=xxx --gen_dir
         args.gen_dir = args.proto_dir
 
     args.gen_dir = os.path.abspath(args.gen_dir)
+    # print(args.gen_dir)
     args.proto_dir = os.path.abspath(args.proto_dir)
-
+    # print(args.proto_dir)
     if args.lang == "csharp":
         # csharp
         gen_csharp(info.protoc_path, info.csharp_grpc, args.proto_dir, args.gen_dir)

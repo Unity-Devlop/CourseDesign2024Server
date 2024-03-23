@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option go_package = "./;proto";
+
+import "game_service.proto";
+
+package proto;
+
+
+message ServerListRequest {
+}
+
+message ServerInfo{
+  string uri = 1;
+  string name = 2;
+}
+
+message ServerListResponse {
+  repeated ServerInfo server_list = 1;
+}
+
+message RegisterServerRequest {
+  string uri = 2;
+  string name = 3;
+}
+
+message UnRegisterServerRequest {
+  string uri = 2;
+}
+
+service GlobalService{
+  rpc GetServerList(ServerListRequest) returns (ServerListResponse);// 拿到所有可用的游戏服务器
+  rpc RegisterServer(RegisterServerRequest) returns (ErrorMessage);// 将自己注册到全局服务器
+  rpc UnRegisterServer(UnRegisterServerRequest) returns (ErrorMessage);// 将自己从全局服务器中移除
+}
