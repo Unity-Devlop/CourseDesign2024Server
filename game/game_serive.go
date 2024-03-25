@@ -3,39 +3,26 @@ package game
 import (
 	pb "Server/proto"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gorm.io/gorm"
 )
 
 type GameService struct {
-	pb.UnimplementedGameServiceServer          // Rpc服务
-	Db                                *gorm.DB // 游戏的数据库
-	tickInterval                      uint32   // 定时器间隔
+	pb.UnimplementedGameServiceServer                 // Rpc服务
+	Db                                *mongo.Database // mongodb
+	tickInterval                      uint32          // 定时器间隔
 }
 
-func NewGameService(db *gorm.DB) *GameService {
+func NewGameService(db *mongo.Database) *GameService {
 	return &GameService{
 		Db: db,
 	}
 }
 
-func (s *GameService) Run(tickInterval uint32) {
-	s.tickInterval = tickInterval
-
-	// 检查是否存在User表
-	if !s.Db.Migrator().HasTable(&User{}) {
-		// 创建表
-		err := s.Db.Migrator().CreateTable(&User{})
-		fmt.Printf("CreateTable User err: %v\n", err)
-	}
-
-	if !s.Db.Migrator().HasTable(&Friendship{}) {
-		// 创建表
-		err := s.Db.Migrator().CreateTable(&Friendship{})
-		fmt.Printf("CreateTable Friendship err: %v\n", err)
-	}
+func (s *GameService) Run() {
 }
 
 func (s *GameService) GetUid(context.Context, *pb.UidRequest) (*pb.UidResponse, error) {
@@ -55,9 +42,11 @@ func (s *GameService) RegisterUser(ctx context.Context, request *pb.RegisterRequ
 		response.Content = "昵称不能为空"
 		return response, nil
 	}
+	userCollection := s.Db.Collection("user")
 
 	var user User
-	if s.Db.First(&user, "uid = ?", request.Uid).Error == nil {
+	filter := bson.D{{"uid", request.Uid}}
+	if userCollection.FindOne(context.Background(), filter).Decode(&user) == nil {
 		response.Content = fmt.Sprintf("用户已经存在 uid:%s", request.Uid)
 		return response, nil
 	}
@@ -67,7 +56,7 @@ func (s *GameService) RegisterUser(ctx context.Context, request *pb.RegisterRequ
 		Name: request.Name,
 	}
 
-	if s.Db.Create(&user).Error != nil {
+	if _, err := userCollection.InsertOne(context.TODO(), user); err != nil {
 		response.Content = fmt.Sprintf("创建用户失败 uid:%s", request.Uid)
 		return response, nil
 	}
@@ -86,9 +75,10 @@ func (s *GameService) GetFriendList(ctx context.Context, request *pb.FriendListR
 	}
 
 	var user User
-	if s.Db.First(&user, "uid = ?", request.Uid).Error != nil {
+	if s.Db.Collection("user").FindOne(context.TODO(), bson.D{{"uid", request.Uid}}).Decode(&user) != nil {
 		errorMsg.Content = fmt.Sprintf("用户[%s]不存在", request.Uid)
 		return response, nil
+
 	}
 
 	errorMsg.Code = pb.StatusCode_OK
@@ -100,7 +90,13 @@ func (s *GameService) GetFriendList(ctx context.Context, request *pb.FriendListR
 	response.List = make([]*pb.FriendInfo, 0)
 
 	// 查找src_uid为in.Uid的记录
-	s.Db.Model(&Friendship{}).Find(&friendships, "src_uid = ?", request.Uid)
+	find, err := s.Db.Collection("friendship").Find(context.TODO(), bson.D{{"src_uid", request.Uid}})
+	if err != nil {
+		return response, err
+	}
+	if find.All(context.TODO(), &friendships) != nil {
+		return response, err
+	}
 	for _, friendship := range friendships {
 		if friendship.DstUid == request.Uid {
 			continue
@@ -110,7 +106,13 @@ func (s *GameService) GetFriendList(ctx context.Context, request *pb.FriendListR
 		})
 	}
 	// 查找dst_uid为in.Uid的记录
-	s.Db.Model(&Friendship{}).Find(&friendships, "dst_uid = ?", request.Uid)
+	find, err = s.Db.Collection("friendship").Find(context.TODO(), bson.D{{"dst_uid", request.Uid}})
+	if err != nil {
+		return response, err
+	}
+	if find.All(context.TODO(), &friendships) != nil {
+		return response, err
+	}
 	for _, friendship := range friendships {
 		if friendship.SrcUid == request.Uid {
 			continue
@@ -123,7 +125,10 @@ func (s *GameService) GetFriendList(ctx context.Context, request *pb.FriendListR
 	// 查Name
 	for _, friendInfo := range response.List {
 		var friend User
-		s.Db.First(&friend, "uid = ?", friendInfo.Uid)
+		err := s.Db.Collection("user").FindOne(context.TODO(), bson.D{{"uid", friendInfo.Uid}}).Decode(&friend)
+		if err != nil {
+			return response, err
+		}
 		friendInfo.Name = friend.Name
 	}
 	return response, nil
@@ -138,11 +143,11 @@ func (s *GameService) AddFriend(ctx context.Context, request *pb.AddFriendReques
 		response.Content = fmt.Sprintf("不能添加自己为好友 uid:%s", request.SenderUid)
 		return response, nil
 	}
-	if s.Db.First(&User{}, "uid = ?", request.SenderUid).Error != nil {
+	if s.Db.Collection("user").FindOne(context.TODO(), bson.D{{"uid", request.SenderUid}}).Err() != nil {
 		response.Content = fmt.Sprintf("发起用户[%s]不存在", request.SenderUid)
 		return response, nil
 	}
-	if s.Db.First(&User{}, "uid = ?", request.TargetUid).Error != nil {
+	if s.Db.Collection("user").FindOne(context.TODO(), bson.D{{"uid", request.TargetUid}}).Err() != nil {
 		response.Content = fmt.Sprintf("目标用户[%s]不存在", request.TargetUid)
 		return response, nil
 	}
@@ -152,19 +157,19 @@ func (s *GameService) AddFriend(ctx context.Context, request *pb.AddFriendReques
 	var smallId = min(request.SenderUid, request.TargetUid)
 	var bigId = max(request.SenderUid, request.TargetUid)
 	// 看下两个人是否有好友关系
-	err := s.Db.First(&friendship, "src_uid = ? AND dst_uid = ?", smallId, bigId).Error
-	if err == nil {
+	if s.Db.Collection("friendship").FindOne(context.TODO(), bson.D{{"src_uid", smallId}, {"dst_uid", bigId}}).Decode(&friendship) == nil {
 		response.Content = fmt.Sprintf("用户[%s]和用户[%s]已经是好友", request.SenderUid, request.TargetUid)
 		return response, nil
-	}
 
+	}
 	// 添加好友
+
 	friendship = Friendship{
 		SrcUid: smallId,
 		DstUid: bigId,
 	}
-
-	if s.Db.Create(&friendship).Error != nil {
+	_, err := s.Db.Collection("friendship").InsertOne(context.TODO(), friendship)
+	if err != nil {
 		response.Content = fmt.Sprintf("用户[%s]和用户[%s]添加好友失败", request.SenderUid, request.TargetUid)
 		return response, nil
 	}
@@ -188,13 +193,12 @@ func (s *GameService) DeleteFriend(ctx context.Context, resutst *pb.DeleteFriend
 	var smallId = min(resutst.SenderUid, resutst.TargetUid)
 	var bigId = max(resutst.SenderUid, resutst.TargetUid)
 	// 看下两个人是否有好友关系
-	err := s.Db.First(&friendship, "src_uid = ? AND dst_uid = ?", smallId, bigId).Error
-	if err != nil {
+	if s.Db.Collection("friendship").FindOne(context.TODO(), bson.D{{"src_uid", smallId}, {"dst_uid", bigId}}).Decode(&friendship) != nil {
 		response.Content = fmt.Sprintf("用户[%s]和用户[%s]不是好友", resutst.SenderUid, resutst.TargetUid)
 		return response, nil
 	}
 	// 删除好友
-	if s.Db.Model(&Friendship{}).Delete(&friendship, "src_uid = ? AND dst_uid = ?", smallId, bigId).Error != nil {
+	if s.Db.Collection("friendship").FindOneAndDelete(context.TODO(), bson.D{{"src_uid", smallId}, {"dst_uid", bigId}}).Decode(&friendship) != nil {
 		response.Content = fmt.Sprintf("用户[%s]和用户[%s]删除好友失败", resutst.SenderUid, resutst.TargetUid)
 		return response, nil
 	}
@@ -219,13 +223,14 @@ func (s *GameService) SearchFriend(ctx context.Context, request *pb.SearchFriend
 
 	var senderUser User
 	var targetUser User
-
-	if s.Db.First(&senderUser, "uid = ?", request.SearcherUid).Error != nil {
+	userCollection := s.Db.Collection("user")
+	if userCollection.FindOne(context.TODO(), bson.D{{"uid", request.SearcherUid}}).Decode(&senderUser) != nil {
 		errorMsg.Content = fmt.Sprintf("进行搜索的玩家不存在 uid:%s", request.SearcherUid)
 		return response, nil
+
 	}
 
-	if s.Db.First(&targetUser, "uid = ?", request.TargetUid).Error != nil {
+	if userCollection.FindOne(context.TODO(), bson.D{{"uid", request.TargetUid}}).Decode(&targetUser) != nil {
 		errorMsg.Content = fmt.Sprintf("搜索的目标玩家不存在 uid:%s", request.TargetUid)
 		return response, nil
 	}
@@ -239,10 +244,11 @@ func (s *GameService) SearchFriend(ctx context.Context, request *pb.SearchFriend
 	var smallId = min(request.SearcherUid, request.TargetUid)
 	var bigId = max(request.SearcherUid, request.TargetUid)
 	// 看下两个人是否有好友关系
-	if s.Db.First(&friendship, "src_uid = ? AND dst_uid = ?", smallId, bigId).Error != nil {
-		response.IsFriend = false
-	} else {
+	if s.Db.Collection("friendship").FindOne(context.TODO(), bson.D{{"src_uid", smallId}, {"dst_uid", bigId}}).Decode(&friendship) == nil {
 		response.IsFriend = true
+		return response, nil
+	} else {
+		response.IsFriend = false
+		return response, nil
 	}
-	return response, nil
 }
