@@ -14,6 +14,8 @@ type GameService struct {
 	pb.UnimplementedGameServiceServer                 // Rpc服务
 	Db                                *mongo.Database // mongodb
 	tickInterval                      uint32          // 定时器间隔
+	userCollection                    *mongo.Collection
+	friendshipCollection              *mongo.Collection
 }
 
 func NewGameService(db *mongo.Database) *GameService {
@@ -25,7 +27,18 @@ func NewGameService(db *mongo.Database) *GameService {
 func (s *GameService) Run() {
 }
 
-func (s *GameService) GetUid(context.Context, *pb.UidRequest) (*pb.UidResponse, error) {
+func (s *GameService) ContainsUser(ctx context.Context, request *pb.StringMessage) (*pb.ErrorMessage, error) {
+	var response = &pb.ErrorMessage{Code: pb.StatusCode_ERROR}
+
+	if s.Db.Collection("user").FindOne(context.TODO(), bson.D{{"uid", request.Content}}).Err() != nil {
+		response.Content = fmt.Sprintf("用户[%s]不存在", request.Content)
+		return response, nil
+	}
+	response.Code = pb.StatusCode_OK
+	return response, nil
+}
+
+func (s *GameService) GetUid(context.Context, *pb.GetUidRequest) (*pb.UidResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUid not implemented")
 }
 

@@ -56,16 +56,37 @@ message RegisterRequest{
   string name = 2;
 }
 
-message UidRequest{}
+message GetUidRequest{
+
+}
 
 message UidResponse{
   ErrorMessage error = 1;
   string uid = 2;
 }
 
+
+//message PlayerData{
+//  string uid = 1;
+//  string name = 2;
+//  Vector3 position = 3;
+//
+//}
+//
+//message Vector3{
+//  float x = 1;
+//  float y = 2;
+//  float z = 3;
+//}
+
+message StringMessage{
+  string content = 1;
+}
+
 service GameService
 {
-  rpc GetUid(UidRequest) returns (UidResponse);//获取一个uid
+  rpc GetUid(GetUidRequest) returns (UidResponse);//获取一个uid
+  rpc ContainsUser(StringMessage) returns (ErrorMessage);
   rpc RegisterUser(RegisterRequest) returns (ErrorMessage);
   rpc GetFriendList(FriendListRequest) returns (FriendShipList);
   rpc AddFriend(AddFriendRequest) returns (ErrorMessage);

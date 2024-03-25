@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	GameService_GetUid_FullMethodName        = "/proto.GameService/GetUid"
+	GameService_ContainsUser_FullMethodName  = "/proto.GameService/ContainsUser"
 	GameService_RegisterUser_FullMethodName  = "/proto.GameService/RegisterUser"
 	GameService_GetFriendList_FullMethodName = "/proto.GameService/GetFriendList"
 	GameService_AddFriend_FullMethodName     = "/proto.GameService/AddFriend"
@@ -31,7 +32,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GameServiceClient interface {
-	GetUid(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*UidResponse, error)
+	GetUid(ctx context.Context, in *GetUidRequest, opts ...grpc.CallOption) (*UidResponse, error)
+	ContainsUser(ctx context.Context, in *StringMessage, opts ...grpc.CallOption) (*ErrorMessage, error)
 	RegisterUser(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
 	GetFriendList(ctx context.Context, in *FriendListRequest, opts ...grpc.CallOption) (*FriendShipList, error)
 	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
@@ -47,9 +49,18 @@ func NewGameServiceClient(cc grpc.ClientConnInterface) GameServiceClient {
 	return &gameServiceClient{cc}
 }
 
-func (c *gameServiceClient) GetUid(ctx context.Context, in *UidRequest, opts ...grpc.CallOption) (*UidResponse, error) {
+func (c *gameServiceClient) GetUid(ctx context.Context, in *GetUidRequest, opts ...grpc.CallOption) (*UidResponse, error) {
 	out := new(UidResponse)
 	err := c.cc.Invoke(ctx, GameService_GetUid_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) ContainsUser(ctx context.Context, in *StringMessage, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_ContainsUser_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +116,8 @@ func (c *gameServiceClient) SearchFriend(ctx context.Context, in *SearchFriendRe
 // All implementations must embed UnimplementedGameServiceServer
 // for forward compatibility
 type GameServiceServer interface {
-	GetUid(context.Context, *UidRequest) (*UidResponse, error)
+	GetUid(context.Context, *GetUidRequest) (*UidResponse, error)
+	ContainsUser(context.Context, *StringMessage) (*ErrorMessage, error)
 	RegisterUser(context.Context, *RegisterRequest) (*ErrorMessage, error)
 	GetFriendList(context.Context, *FriendListRequest) (*FriendShipList, error)
 	AddFriend(context.Context, *AddFriendRequest) (*ErrorMessage, error)
@@ -118,8 +130,11 @@ type GameServiceServer interface {
 type UnimplementedGameServiceServer struct {
 }
 
-func (UnimplementedGameServiceServer) GetUid(context.Context, *UidRequest) (*UidResponse, error) {
+func (UnimplementedGameServiceServer) GetUid(context.Context, *GetUidRequest) (*UidResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUid not implemented")
+}
+func (UnimplementedGameServiceServer) ContainsUser(context.Context, *StringMessage) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ContainsUser not implemented")
 }
 func (UnimplementedGameServiceServer) RegisterUser(context.Context, *RegisterRequest) (*ErrorMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
@@ -150,7 +165,7 @@ func RegisterGameServiceServer(s grpc.ServiceRegistrar, srv GameServiceServer) {
 }
 
 func _GameService_GetUid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UidRequest)
+	in := new(GetUidRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -162,7 +177,25 @@ func _GameService_GetUid_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: GameService_GetUid_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServiceServer).GetUid(ctx, req.(*UidRequest))
+		return srv.(GameServiceServer).GetUid(ctx, req.(*GetUidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_ContainsUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StringMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).ContainsUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_ContainsUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).ContainsUser(ctx, req.(*StringMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -267,6 +300,10 @@ var GameService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUid",
 			Handler:    _GameService_GetUid_Handler,
+		},
+		{
+			MethodName: "ContainsUser",
+			Handler:    _GameService_ContainsUser_Handler,
 		},
 		{
 			MethodName: "RegisterUser",
