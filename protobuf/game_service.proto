@@ -15,14 +15,14 @@ message ErrorMessage{
   string content = 2;
 }
 
-message FriendInfo{
+message UserInfo{
   string Uid = 1;
   string Name = 2;
 }
 
 message FriendShipList{
   ErrorMessage error = 1;
-  repeated FriendInfo list = 2;
+  repeated UserInfo list = 2;
 }
 
 message FriendListRequest{
@@ -83,6 +83,44 @@ message StringMessage{
   string content = 1;
 }
 
+message TeamInfo{
+  string Owner = 1;
+  string Id = 2;
+  string Name = 3;
+  string Color = 4;//队伍颜色 HexString
+  repeated UserInfo members = 5;
+}
+message TeamListRequest{
+}
+
+message TeamListResponse{
+  ErrorMessage error = 1;
+  repeated TeamInfo list = 2;
+}
+
+message JoinTeamRequest{
+  string sender = 1;
+  string teamId = 2;
+}
+
+message CreateTeamRequest{
+  string senderUid = 1;
+  string teamId = 2;
+  string teamName = 3;
+  string teamColor = 4;
+}
+
+message DeleteTeamRequest{
+  string sender = 1;
+  string teamId = 2;
+}
+
+message LeaveTeamRequest{
+  string sender = 1;
+  string teamId = 2;
+}
+
+
 service GameService
 {
   rpc GetUid(GetUidRequest) returns (UidResponse);//获取一个uid
@@ -92,4 +130,10 @@ service GameService
   rpc AddFriend(AddFriendRequest) returns (ErrorMessage);
   rpc DeleteFriend(DeleteFriendRequest) returns (ErrorMessage);
   rpc SearchFriend(SearchFriendRequest) returns (SearchFriendResponse);
+
+  rpc GetTeamList(TeamListRequest) returns (TeamListResponse);
+  rpc JoinTeam(JoinTeamRequest) returns (ErrorMessage);
+  rpc CreateTeam(CreateTeamRequest) returns (ErrorMessage);
+  rpc DeleteTeam(DeleteTeamRequest) returns (ErrorMessage);
+  rpc LeaveTeam(LeaveTeamRequest) returns (ErrorMessage);
 }

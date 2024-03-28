@@ -12,43 +12,12 @@ import (
 	"time"
 )
 
-//type dsnConfig struct {
-//	Dsn string `json:"dsn"`
-//}
-
-//func getMySqlDB() *gorm.DB {
-//	var config dsnConfig    // MySQL配置
-//	var conn gorm.Dialector // gorm连接
-//	file, _ := os.Open("config.json")
-//	defer func(file *os.File) {
-//		err := file.Close()
-//		if err != nil {
-//			fmt.Printf("[Service] failed to close file: %v\n", err)
-//		}
-//	}(file)
-//
-//	// 解析json
-//	decoder := json.NewDecoder(file)
-//	_ = decoder.Decode(&config)
-//	fmt.Printf("[Service] dsn: %s\n", config.Dsn)
-//	conn = mysql.Open(config.Dsn) // mysql
-//	db, err := gorm.Open(conn, &gorm.Config{})
-//	if err != nil {
-//		panic("failed to connect database")
-//	}
-//	fmt.Printf("[Service] connected to database.\n")
-//	return db
-//}
-//
-//func getSqliteDB() *gorm.DB {
-//	db, err := gorm.Open(sqlite.Open("game.db"), &gorm.Config{})
-//	if err != nil {
-//		panic("failed to connect database")
-//	}
-//	return db
-//}
-
 func getMongoDB() *mongo.Database {
+	//var uri = os.Getenv("MONGO_URI")
+	//fmt.Printf("[Service] mongo uri: %s\n", uri)
+	//if uri == "" {
+	//	uri = "mongodb://localhost:27017"
+	//}
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017").SetConnectTimeout(5*time.Second))
 	if err != nil {
 		panic(err)

@@ -26,6 +26,11 @@ const (
 	GameService_AddFriend_FullMethodName     = "/proto.GameService/AddFriend"
 	GameService_DeleteFriend_FullMethodName  = "/proto.GameService/DeleteFriend"
 	GameService_SearchFriend_FullMethodName  = "/proto.GameService/SearchFriend"
+	GameService_GetTeamList_FullMethodName   = "/proto.GameService/GetTeamList"
+	GameService_JoinTeam_FullMethodName      = "/proto.GameService/JoinTeam"
+	GameService_CreateTeam_FullMethodName    = "/proto.GameService/CreateTeam"
+	GameService_DeleteTeam_FullMethodName    = "/proto.GameService/DeleteTeam"
+	GameService_LeaveTeam_FullMethodName     = "/proto.GameService/LeaveTeam"
 )
 
 // GameServiceClient is the client API for GameService service.
@@ -39,6 +44,11 @@ type GameServiceClient interface {
 	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
 	DeleteFriend(ctx context.Context, in *DeleteFriendRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
 	SearchFriend(ctx context.Context, in *SearchFriendRequest, opts ...grpc.CallOption) (*SearchFriendResponse, error)
+	GetTeamList(ctx context.Context, in *TeamListRequest, opts ...grpc.CallOption) (*TeamListResponse, error)
+	JoinTeam(ctx context.Context, in *JoinTeamRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	CreateTeam(ctx context.Context, in *CreateTeamRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	DeleteTeam(ctx context.Context, in *DeleteTeamRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
+	LeaveTeam(ctx context.Context, in *LeaveTeamRequest, opts ...grpc.CallOption) (*ErrorMessage, error)
 }
 
 type gameServiceClient struct {
@@ -112,6 +122,51 @@ func (c *gameServiceClient) SearchFriend(ctx context.Context, in *SearchFriendRe
 	return out, nil
 }
 
+func (c *gameServiceClient) GetTeamList(ctx context.Context, in *TeamListRequest, opts ...grpc.CallOption) (*TeamListResponse, error) {
+	out := new(TeamListResponse)
+	err := c.cc.Invoke(ctx, GameService_GetTeamList_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) JoinTeam(ctx context.Context, in *JoinTeamRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_JoinTeam_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) CreateTeam(ctx context.Context, in *CreateTeamRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_CreateTeam_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) DeleteTeam(ctx context.Context, in *DeleteTeamRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_DeleteTeam_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gameServiceClient) LeaveTeam(ctx context.Context, in *LeaveTeamRequest, opts ...grpc.CallOption) (*ErrorMessage, error) {
+	out := new(ErrorMessage)
+	err := c.cc.Invoke(ctx, GameService_LeaveTeam_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GameServiceServer is the server API for GameService service.
 // All implementations must embed UnimplementedGameServiceServer
 // for forward compatibility
@@ -123,6 +178,11 @@ type GameServiceServer interface {
 	AddFriend(context.Context, *AddFriendRequest) (*ErrorMessage, error)
 	DeleteFriend(context.Context, *DeleteFriendRequest) (*ErrorMessage, error)
 	SearchFriend(context.Context, *SearchFriendRequest) (*SearchFriendResponse, error)
+	GetTeamList(context.Context, *TeamListRequest) (*TeamListResponse, error)
+	JoinTeam(context.Context, *JoinTeamRequest) (*ErrorMessage, error)
+	CreateTeam(context.Context, *CreateTeamRequest) (*ErrorMessage, error)
+	DeleteTeam(context.Context, *DeleteTeamRequest) (*ErrorMessage, error)
+	LeaveTeam(context.Context, *LeaveTeamRequest) (*ErrorMessage, error)
 	mustEmbedUnimplementedGameServiceServer()
 }
 
@@ -150,6 +210,21 @@ func (UnimplementedGameServiceServer) DeleteFriend(context.Context, *DeleteFrien
 }
 func (UnimplementedGameServiceServer) SearchFriend(context.Context, *SearchFriendRequest) (*SearchFriendResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchFriend not implemented")
+}
+func (UnimplementedGameServiceServer) GetTeamList(context.Context, *TeamListRequest) (*TeamListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTeamList not implemented")
+}
+func (UnimplementedGameServiceServer) JoinTeam(context.Context, *JoinTeamRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JoinTeam not implemented")
+}
+func (UnimplementedGameServiceServer) CreateTeam(context.Context, *CreateTeamRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTeam not implemented")
+}
+func (UnimplementedGameServiceServer) DeleteTeam(context.Context, *DeleteTeamRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTeam not implemented")
+}
+func (UnimplementedGameServiceServer) LeaveTeam(context.Context, *LeaveTeamRequest) (*ErrorMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LeaveTeam not implemented")
 }
 func (UnimplementedGameServiceServer) mustEmbedUnimplementedGameServiceServer() {}
 
@@ -290,6 +365,96 @@ func _GameService_SearchFriend_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GameService_GetTeamList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TeamListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).GetTeamList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_GetTeamList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).GetTeamList(ctx, req.(*TeamListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_JoinTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JoinTeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).JoinTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_JoinTeam_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).JoinTeam(ctx, req.(*JoinTeamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_CreateTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).CreateTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_CreateTeam_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).CreateTeam(ctx, req.(*CreateTeamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_DeleteTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).DeleteTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_DeleteTeam_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).DeleteTeam(ctx, req.(*DeleteTeamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GameService_LeaveTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LeaveTeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GameServiceServer).LeaveTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GameService_LeaveTeam_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GameServiceServer).LeaveTeam(ctx, req.(*LeaveTeamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GameService_ServiceDesc is the grpc.ServiceDesc for GameService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -324,6 +489,26 @@ var GameService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchFriend",
 			Handler:    _GameService_SearchFriend_Handler,
+		},
+		{
+			MethodName: "GetTeamList",
+			Handler:    _GameService_GetTeamList_Handler,
+		},
+		{
+			MethodName: "JoinTeam",
+			Handler:    _GameService_JoinTeam_Handler,
+		},
+		{
+			MethodName: "CreateTeam",
+			Handler:    _GameService_CreateTeam_Handler,
+		},
+		{
+			MethodName: "DeleteTeam",
+			Handler:    _GameService_DeleteTeam_Handler,
+		},
+		{
+			MethodName: "LeaveTeam",
+			Handler:    _GameService_LeaveTeam_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
